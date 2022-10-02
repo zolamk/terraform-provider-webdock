@@ -7,7 +7,7 @@ import (
 func publicKeySchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"id": {
-			Type:        schema.TypeInt,
+			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "PublicKey ID",
 		},
