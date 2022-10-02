@@ -31,6 +31,10 @@ func Provider() *schema.Provider {
 			"webdock_locations":   dataSourceWebdockLocations(),
 			"webdock_public_keys": dataSourceWebdockPublicKeys(),
 		},
+
+		ResourcesMap: map[string]*schema.Resource{
+			"webdock_public_key": resourceWebdockPublicKey(),
+		},
 	}
 
 	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
