@@ -23,6 +23,9 @@ func Provider() *schema.Provider {
 				Description: "The URL to use for the Webdock API.",
 			},
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"webdock_account": datasourceWebdockAccount(),
+		},
 	}
 
 	p.ConfigureContextFunc = func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
