@@ -220,7 +220,7 @@ type PostServerModelDTO struct {
 	SnapshotId *int64 `json:"snapshotId,omitempty"`
 }
 
-func (c *Client) GetServers(ctx context.Context, params *GetServersParams, reqEditors ...RequestEditorFn) (*Servers, error) {
+func (c *Client) GetServers(ctx context.Context, params *GetServersParams) (*Servers, error) {
 	req, err := newGetServersRequest(c.Server, params)
 	if err != nil {
 		return nil, err
@@ -284,7 +284,7 @@ func (c *Client) CreateServer(ctx context.Context, body CreateServerJSONRequestB
 	return &server, &callbackID, nil
 }
 
-func (c *Client) DeleteServer(ctx context.Context, serverSlug string, reqEditors ...RequestEditorFn) (*string, error) {
+func (c *Client) DeleteServer(ctx context.Context, serverSlug string) (*string, error) {
 	req, err := newDeleteServerRequest(c.Server, serverSlug)
 	if err != nil {
 		return nil, err
@@ -338,7 +338,7 @@ func (c *Client) GetServerBySlug(ctx context.Context, serverSlug string) (*Serve
 	return &server, nil
 }
 
-func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchServerJSONRequestBody, reqEditors ...RequestEditorFn) (*Server, error) {
+func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchServerJSONRequestBody) (*Server, error) {
 	req, err := newPatchServerRequest(c.Server, serverSlug, body)
 	if err != nil {
 		return nil, err
@@ -392,7 +392,7 @@ func (c *Client) ReinstallServer(ctx context.Context, serverSlug string, body Re
 	return &callbackID, nil
 }
 
-func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body ResizeServerJSONRequestBody, reqEditors ...RequestEditorFn) (*string, error) {
+func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body ResizeServerJSONRequestBody) (*string, error) {
 	req, err := newResizeServerRequest(c.Server, serverSlug, body)
 	if err != nil {
 		return nil, err
@@ -416,7 +416,7 @@ func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body Resiz
 	return &callbackID, nil
 }
 
-func (c *Client) ResizeDryRun(ctx context.Context, serverSlug string, body ResizeDryRunJSONRequestBody, reqEditors ...RequestEditorFn) (*ServerResize, error) {
+func (c *Client) ResizeDryRun(ctx context.Context, serverSlug string, body ResizeDryRunJSONRequestBody) (*ServerResize, error) {
 	req, err := newResizeDryRunRequest(c.Server, serverSlug, body)
 	if err != nil {
 		return nil, err

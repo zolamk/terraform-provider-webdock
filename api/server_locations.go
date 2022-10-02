@@ -30,7 +30,7 @@ type ServerLocation struct {
 
 type ServerLocations []ServerLocation
 
-func (c *Client) GetServersLocations(ctx context.Context, reqEditors ...RequestEditorFn) (*ServerLocations, error) {
+func (c *Client) GetServersLocations(ctx context.Context) (*ServerLocations, error) {
 	req, err := newGetServersLocationsRequest(c.Server)
 	if err != nil {
 		return nil, err

@@ -71,7 +71,7 @@ type EventLog struct {
 
 type Events []EventLog
 
-func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*Events, error) {
+func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (*Events, error) {
 	req, err := newGetEventsRequest(c.Server, params)
 	if err != nil {
 		return nil, err

@@ -21,11 +21,11 @@ type CreatePublicKeyModel struct {
 
 // PublicKey model
 type PublicKey struct {
+	// PublicKey ID
+	Id json.Number `json:"id,omitempty" mapstructure:"id"`
+
 	// PublicKey creation datetime
 	Created string `json:"created,omitempty" mapstructure:"created_at"`
-
-	// PublicKey ID
-	Id int64 `json:"id,omitempty" mapstructure:"id"`
 
 	// PublicKey content
 	Key string `json:"key,omitempty" mapstructure:"key"`
@@ -37,13 +37,7 @@ type PublicKey struct {
 // PublicKeys is a collection of PublicKey
 type PublicKeys []PublicKey
 
-type PostPublicKeysResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *PublicKey
-}
-
-func (c *Client) GetPublicKeys(ctx context.Context, reqEditors ...RequestEditorFn) (*PublicKeys, error) {
+func (c *Client) GetPublicKeys(ctx context.Context) (*PublicKeys, error) {
 	req, err := newGetPublicKeysRequest(c.Server)
 	if err != nil {
 		return nil, err
