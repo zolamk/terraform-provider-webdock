@@ -33,6 +33,7 @@ func Provider() *schema.Provider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
+			"webdock_server":     resourceWebdockServer(),
 			"webdock_public_key": resourceWebdockPublicKey(),
 		},
 	}
