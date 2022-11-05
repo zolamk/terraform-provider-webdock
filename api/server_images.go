@@ -26,13 +26,18 @@ type ServerImage struct {
 // ServerImages is a collection of ServerImage
 type ServerImages []ServerImage
 
-func (c *Client) GetServersImages(ctx context.Context) (*ServerImages, error) {
-	req, err := newGetServersImagesRequest(c.Server)
+func (c *Client) GetServersImages(ctx context.Context) (ServerImages, error) {
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += "images"
+
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -45,25 +50,11 @@ func (c *Client) GetServersImages(ctx context.Context) (*ServerImages, error) {
 
 	defer res.Body.Close()
 
-	decoder := json.NewDecoder(res.Body)
+	serverImages := ServerImages{}
 
-	var serverImages ServerImages
-
-	if err = decoder.Decode(&serverImages); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&serverImages); err != nil {
 		return nil, err
 	}
 
-	return &serverImages, nil
-}
-
-// newGetServersImagesRequest generates requests for GetServersImages
-func newGetServersImagesRequest(server string) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "images"
-
-	return http.NewRequest("GET", serverURL.String(), nil)
+	return serverImages, nil
 }

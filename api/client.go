@@ -137,4 +137,12 @@ type ClientInterface interface {
 	ResizeServer(ctx context.Context, serverSlug string, body ResizeServerJSONRequestBody) (*http.Response, error)
 
 	ResizeDryRun(ctx context.Context, serverSlug string, body ResizeDryRunJSONRequestBody) (*http.Response, error)
+
+	GetShellUsers(ctx context.Context, serverSlug string) ([]ShellUser, error)
+
+	CreateShellUser(ctx context.Context, serverSlug string, shellUser *ShellUser) (*ShellUser, error)
+
+	DeleteShellUser(ctx context.Context, serverSlug string, shellUserID int64) (string, error)
+
+	UpdateShellUserPublicKeys(ctx context.Context, serverSlug string, shellUserID int64, publicKeys []int64) (*ShellUser, error)
 }

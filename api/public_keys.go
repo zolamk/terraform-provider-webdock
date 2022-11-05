@@ -37,13 +37,18 @@ type PublicKey struct {
 // PublicKeys is a collection of PublicKey
 type PublicKeys []PublicKey
 
-func (c *Client) GetPublicKeys(ctx context.Context) (*PublicKeys, error) {
-	req, err := newGetPublicKeysRequest(c.Server)
+func (c *Client) GetPublicKeys(ctx context.Context) (PublicKeys, error) {
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += "account/publicKeys"
+
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -52,24 +57,36 @@ func (c *Client) GetPublicKeys(ctx context.Context) (*PublicKeys, error) {
 
 	defer res.Body.Close()
 
-	decoder := json.NewDecoder(res.Body)
-
 	var publicKeys PublicKeys
 
-	if err = decoder.Decode(&publicKeys); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&publicKeys); err != nil {
 		return nil, err
 	}
 
-	return &publicKeys, nil
+	return publicKeys, nil
 }
 
 func (c *Client) CreatePublicKey(ctx context.Context, body CreatePublicKeyModel) (*PublicKey, error) {
-	req, err := newCreatePublicKeyRequest(c.Server, body)
+	var bodyReader io.Reader
+
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	bodyReader = bytes.NewReader(buf)
+
+	serverURL, err := url.Parse(c.Server)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL.Path += "account/publicKeys"
+
+	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -82,24 +99,27 @@ func (c *Client) CreatePublicKey(ctx context.Context, body CreatePublicKeyModel)
 		return nil, fmt.Errorf("error creating public key: %s", res.Status)
 	}
 
-	var publicKey PublicKey
+	publicKey := &PublicKey{}
 
-	decoder := json.NewDecoder(res.Body)
-
-	if err = decoder.Decode(&publicKey); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(publicKey); err != nil {
 		return nil, err
 	}
 
-	return &publicKey, nil
+	return publicKey, nil
 }
 
 func (c *Client) DeletePublicKey(ctx context.Context, id int64) error {
-	req, err := newDeletePublicKeyRequest(c.Server, id)
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += fmt.Sprintf("account/publicKeys/%d", id)
+
+	req, err := http.NewRequestWithContext(ctx, "DELETE", serverURL.String(), nil)
+	if err != nil {
+		return err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -113,54 +133,4 @@ func (c *Client) DeletePublicKey(ctx context.Context, id int64) error {
 	}
 
 	return nil
-}
-
-// newGetPublicKeysRequest generates requests for GetPublicKeys
-func newGetPublicKeysRequest(server string) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "account/publicKeys"
-
-	req, err := http.NewRequest("GET", serverURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// newCreatePublicKeyRequest calls the generic PostPublicKeys builder with application/json body
-func newCreatePublicKeyRequest(server string, body CreatePublicKeyModel) (*http.Request, error) {
-	var bodyReader io.Reader
-
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	bodyReader = bytes.NewReader(buf)
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "account/publicKeys"
-
-	return http.NewRequest("POST", serverURL.String(), bodyReader)
-}
-
-// newDeletePublicKeyRequest generates requests for DeletePublicKey
-func newDeletePublicKeyRequest(server string, id int64) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += fmt.Sprintf("account/publicKeys/%d", id)
-
-	return http.NewRequest("DELETE", serverURL.String(), nil)
 }

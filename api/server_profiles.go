@@ -48,35 +48,8 @@ type ServerProfile struct {
 // ServerProfiles is a collection of ServerProfile
 type ServerProfiles []ServerProfile
 
-func (c *Client) GetServersProfiles(ctx context.Context, params *GetServersProfilesParams) (*ServerProfiles, error) {
-	req, err := newGetServersProfilesRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-
-	req = req.WithContext(ctx)
-
-	res, err := c.Client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer res.Body.Close()
-
-	decoder := json.NewDecoder(res.Body)
-
-	var profiles ServerProfiles
-
-	if err := decoder.Decode(&profiles); err != nil {
-		return nil, err
-	}
-
-	return &profiles, err
-}
-
-// newGetServersProfilesRequest generates requests for GetServersProfiles
-func newGetServersProfilesRequest(server string, params *GetServersProfilesParams) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
+func (c *Client) GetServersProfiles(ctx context.Context, params *GetServersProfilesParams) (ServerProfiles, error) {
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -90,5 +63,23 @@ func newGetServersProfilesRequest(server string, params *GetServersProfilesParam
 
 	serverURL.RawQuery = queryValues.Encode()
 
-	return http.NewRequest("GET", serverURL.String(), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := c.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer res.Body.Close()
+
+	profiles := ServerProfiles{}
+
+	if err := json.NewDecoder(res.Body).Decode(&profiles); err != nil {
+		return nil, err
+	}
+
+	return profiles, err
 }

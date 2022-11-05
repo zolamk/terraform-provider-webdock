@@ -22,7 +22,7 @@ type ServerLocation struct {
 	Icon string `json:"icon,omitempty" mapstructure:"icon"`
 
 	// Location ID
-	Id string `json:"id,omitempty" mapstructure:"id"`
+	ID string `json:"id,omitempty" mapstructure:"id"`
 
 	// Location Name
 	Name string `json:"name,omitempty" mapstructure:"name"`
@@ -30,13 +30,18 @@ type ServerLocation struct {
 
 type ServerLocations []ServerLocation
 
-func (c *Client) GetServersLocations(ctx context.Context) (*ServerLocations, error) {
-	req, err := newGetServersLocationsRequest(c.Server)
+func (c *Client) GetServersLocations(ctx context.Context) (ServerLocations, error) {
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += "locations"
+
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -45,25 +50,11 @@ func (c *Client) GetServersLocations(ctx context.Context) (*ServerLocations, err
 
 	defer res.Body.Close()
 
-	decoder := json.NewDecoder(res.Body)
+	locations := ServerLocations{}
 
-	var locations ServerLocations
-
-	if err = decoder.Decode(&locations); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&locations); err != nil {
 		return nil, err
 	}
 
-	return &locations, nil
-}
-
-// newGetServersLocationsRequest generates requests for GetServersLocations
-func newGetServersLocationsRequest(server string) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "locations"
-
-	return http.NewRequest("GET", serverURL.String(), nil)
+	return locations, nil
 }

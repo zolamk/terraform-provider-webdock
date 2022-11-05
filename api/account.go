@@ -42,12 +42,17 @@ type AccountInformation struct {
 }
 
 func (c *Client) GetAccountInformation(ctx context.Context) (*AccountInformation, error) {
-	req, err := newGetAccountInformationRequest(c.Server)
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += "account/accountInformation"
+
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -58,27 +63,13 @@ func (c *Client) GetAccountInformation(ctx context.Context) (*AccountInformation
 		return nil, fmt.Errorf("error getting account information: %s", res.Status)
 	}
 
-	decoder := json.NewDecoder(res.Body)
-
 	defer res.Body.Close()
 
 	account := &AccountInformation{}
 
-	if err := decoder.Decode(account); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(account); err != nil {
 		return nil, err
 	}
 
 	return account, nil
-}
-
-// newGetAccountInformationRequest generates requests for GetAccountInformation
-func newGetAccountInformationRequest(server string) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "account/accountInformation"
-
-	return http.NewRequest("GET", serverURL.String(), nil)
 }

@@ -221,12 +221,24 @@ type PostServerModelDTO struct {
 }
 
 func (c *Client) GetServers(ctx context.Context, params *GetServersParams) (*Servers, error) {
-	req, err := newGetServersRequest(c.Server, params)
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += "servers"
+
+	queryValues, err := query.Values(params)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -241,9 +253,7 @@ func (c *Client) GetServers(ctx context.Context, params *GetServersParams) (*Ser
 
 	var servers Servers
 
-	decoder := json.NewDecoder(res.Body)
-
-	if err = decoder.Decode(&servers); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&servers); err != nil {
 		return nil, err
 	}
 
@@ -251,12 +261,26 @@ func (c *Client) GetServers(ctx context.Context, params *GetServersParams) (*Ser
 }
 
 func (c *Client) CreateServer(ctx context.Context, body CreateServerJSONRequestBody) (*Server, *string, error) {
-	req, err := newCreateServerRequest(c.Server, body)
+	var bodyReader io.Reader
+
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	req = req.WithContext(ctx)
+	bodyReader = bytes.NewReader(buf)
+
+	serverURL, err := url.Parse(c.Server)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	serverURL.Path += "servers"
+
+	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -271,12 +295,8 @@ func (c *Client) CreateServer(ctx context.Context, body CreateServerJSONRequestB
 
 	var server Server
 
-	decoder := json.NewDecoder(res.Body)
-
-	if err = decoder.Decode(&server); err != nil {
-
+	if err = json.NewDecoder(res.Body).Decode(&server); err != nil {
 		return nil, nil, err
-
 	}
 
 	callbackID := res.Header.Get("X-Callback-Id")
@@ -285,12 +305,19 @@ func (c *Client) CreateServer(ctx context.Context, body CreateServerJSONRequestB
 }
 
 func (c *Client) DeleteServer(ctx context.Context, serverSlug string) (*string, error) {
-	req, err := newDeleteServerRequest(c.Server, serverSlug)
+	serverSlug = url.PathEscape(serverSlug)
+
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += fmt.Sprintf("servers/%s", serverSlug)
+
+	req, err := http.NewRequestWithContext(ctx, "DELETE", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -309,12 +336,19 @@ func (c *Client) DeleteServer(ctx context.Context, serverSlug string) (*string, 
 }
 
 func (c *Client) GetServerBySlug(ctx context.Context, serverSlug string) (*Server, error) {
-	req, err := newGetServerBySlugRequest(c.Server, serverSlug)
+	serverSlug = url.PathEscape(serverSlug)
+
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += fmt.Sprintf("servers/%s", serverSlug)
+
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -329,9 +363,7 @@ func (c *Client) GetServerBySlug(ctx context.Context, serverSlug string) (*Serve
 
 	var server Server
 
-	decoder := json.NewDecoder(res.Body)
-
-	if err = decoder.Decode(&server); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&server); err != nil {
 		return nil, err
 	}
 
@@ -339,12 +371,28 @@ func (c *Client) GetServerBySlug(ctx context.Context, serverSlug string) (*Serve
 }
 
 func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchServerJSONRequestBody) (*Server, error) {
-	req, err := newPatchServerRequest(c.Server, serverSlug, body)
+	var bodyReader io.Reader
+
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	bodyReader = bytes.NewReader(buf)
+
+	serverSlug = url.PathEscape(serverSlug)
+
+	serverURL, err := url.Parse(c.Server)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL.Path += fmt.Sprintf("servers/%s", serverSlug)
+
+	req, err := http.NewRequestWithContext(ctx, "PATCH", serverURL.String(), bodyReader)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -359,9 +407,7 @@ func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchS
 
 	var server Server
 
-	decoder := json.NewDecoder(res.Body)
-
-	if err = decoder.Decode(&server); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&server); err != nil {
 		return nil, err
 	}
 
@@ -369,12 +415,28 @@ func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchS
 }
 
 func (c *Client) ReinstallServer(ctx context.Context, serverSlug string, body ReinstallServerJSONRequestBody) (*string, error) {
-	req, err := newReinstallServerRequest(c.Server, serverSlug, body)
+	var bodyReader io.Reader
+
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	bodyReader = bytes.NewReader(buf)
+
+	serverSlug = url.PathEscape(serverSlug)
+
+	serverURL, err := url.Parse(c.Server)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL.Path += fmt.Sprintf("servers/%s/actions/reinstall", serverSlug)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -393,12 +455,28 @@ func (c *Client) ReinstallServer(ctx context.Context, serverSlug string, body Re
 }
 
 func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body ResizeServerJSONRequestBody) (*string, error) {
-	req, err := newResizeServerRequest(c.Server, serverSlug, body)
+	var bodyReader io.Reader
+
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	bodyReader = bytes.NewReader(buf)
+
+	serverSlug = url.PathEscape(serverSlug)
+
+	serverURL, err := url.Parse(c.Server)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL.Path += fmt.Sprintf("servers/%s/actions/resize", serverSlug)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
@@ -417,15 +495,30 @@ func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body Resiz
 }
 
 func (c *Client) ResizeDryRun(ctx context.Context, serverSlug string, body ResizeDryRunJSONRequestBody) (*ServerResize, error) {
-	req, err := newResizeDryRunRequest(c.Server, serverSlug, body)
+	var bodyReader io.Reader
+
+	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	bodyReader = bytes.NewReader(buf)
+
+	serverSlug = url.PathEscape(serverSlug)
+
+	serverURL, err := url.Parse(c.Server)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL.Path += fmt.Sprintf("servers/%s/actions/resize/dryrun", serverSlug)
+
+	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
+	if err != nil {
+		return nil, err
+	}
 
 	res, err := c.Client.Do(req)
-
 	if err != nil {
 		return nil, err
 	}
@@ -438,172 +531,9 @@ func (c *Client) ResizeDryRun(ctx context.Context, serverSlug string, body Resiz
 
 	var serverResize ServerResize
 
-	decoder := json.NewDecoder(res.Body)
-
-	if err = decoder.Decode(&serverResize); err != nil {
+	if err = json.NewDecoder(res.Body).Decode(&serverResize); err != nil {
 		return nil, err
 	}
 
 	return &serverResize, nil
-}
-
-// newGetServersRequest generates requests for GetServers
-func newGetServersRequest(server string, params *GetServersParams) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "servers"
-
-	queryValues, err := query.Values(params)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.RawQuery = queryValues.Encode()
-
-	return http.NewRequest("GET", serverURL.String(), nil)
-}
-
-// newCreateServerRequest calls the generic CreateServer builder with application/json body
-func newCreateServerRequest(server string, body CreateServerJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	bodyReader = bytes.NewReader(buf)
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "servers"
-
-	return http.NewRequest("POST", serverURL.String(), bodyReader)
-}
-
-// newDeleteServerRequest generates requests for DeleteServer
-func newDeleteServerRequest(server string, serverSlug string) (*http.Request, error) {
-	serverSlug = url.PathEscape(serverSlug)
-
-	serverURL, err := url.Parse(server)
-
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += fmt.Sprintf("servers/%s", serverSlug)
-
-	return http.NewRequest("DELETE", serverURL.String(), nil)
-}
-
-// newGetServerBySlugRequest generates requests for GetServerBySlug
-func newGetServerBySlugRequest(server string, serverSlug string) (*http.Request, error) {
-	serverSlug = url.PathEscape(serverSlug)
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += fmt.Sprintf("servers/%s", serverSlug)
-
-	return http.NewRequest("GET", serverURL.String(), nil)
-}
-
-// newPatchServerRequest calls the generic PatchServer builder with application/json body
-func newPatchServerRequest(server string, serverSlug string, body PatchServerJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	bodyReader = bytes.NewReader(buf)
-
-	serverSlug = url.PathEscape(serverSlug)
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += fmt.Sprintf("servers/%s", serverSlug)
-
-	return http.NewRequest("PATCH", serverURL.String(), bodyReader)
-}
-
-// newReinstallServerRequest calls the generic ReinstallServer builder with application/json body
-func newReinstallServerRequest(server string, serverSlug string, body ReinstallServerJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	bodyReader = bytes.NewReader(buf)
-
-	serverSlug = url.PathEscape(serverSlug)
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += fmt.Sprintf("servers/%s/actions/reinstall", serverSlug)
-
-	return http.NewRequest("POST", serverURL.String(), bodyReader)
-}
-
-// newResizeServerRequest calls the generic ResizeServer builder with application/json body
-func newResizeServerRequest(server string, serverSlug string, body ResizeServerJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	bodyReader = bytes.NewReader(buf)
-
-	serverSlug = url.PathEscape(serverSlug)
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += fmt.Sprintf("servers/%s/actions/resize", serverSlug)
-
-	return http.NewRequest("POST", serverURL.String(), bodyReader)
-}
-
-// newResizeDryRunRequest calls the generic ResizeDryRun builder with application/json body
-func newResizeDryRunRequest(server string, serverSlug string, body ResizeDryRunJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-
-	bodyReader = bytes.NewReader(buf)
-
-	serverSlug = url.PathEscape(serverSlug)
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += fmt.Sprintf("servers/%s/actions/resize/dryrun", serverSlug)
-
-	return http.NewRequest("POST", serverURL.String(), bodyReader)
 }

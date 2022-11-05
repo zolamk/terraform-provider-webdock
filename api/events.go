@@ -71,13 +71,25 @@ type EventLog struct {
 
 type Events []EventLog
 
-func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (*Events, error) {
-	req, err := newGetEventsRequest(c.Server, params)
+func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (Events, error) {
+	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
+	serverURL.Path += "events"
+
+	queryValues, err := query.Values(params)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL.RawQuery = queryValues.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
@@ -92,30 +104,11 @@ func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (*Event
 
 	decoder := json.NewDecoder(resp.Body)
 
-	events := &Events{}
+	events := Events{}
 
 	if err := decoder.Decode(&events); err != nil {
 		return nil, err
 	}
 
 	return events, nil
-}
-
-// newGetEventsRequest generates requests for GetEvents
-func newGetEventsRequest(server string, params *GetEventsParams) (*http.Request, error) {
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.Path += "events"
-
-	queryValues, err := query.Values(params)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL.RawQuery = queryValues.Encode()
-
-	return http.NewRequest("GET", serverURL.String(), nil)
 }
