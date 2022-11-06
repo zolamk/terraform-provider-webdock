@@ -14,13 +14,13 @@ type ServerImage struct {
 	Name string `json:"name,omitempty" mapstructure:"name"`
 
 	// PHP Version. For example &quot;7.4&quot;
-	PhpVersion *string `json:"phpVersion" mapstructure:"php_version"`
+	PhpVersion string `json:"phpVersion" mapstructure:"php_version"`
 
 	// Image slug
 	Slug string `json:"slug,omitempty" mapstructure:"slug"`
 
 	// Web server type
-	WebServer *string `json:"webServer" mapstructure:"web_server"`
+	WebServer string `json:"webServer" mapstructure:"web_server"`
 }
 
 // ServerImages is a collection of ServerImage
@@ -45,7 +45,13 @@ func (c *Client) GetServersImages(ctx context.Context) (ServerImages, error) {
 	}
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error getting images: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding get server images error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting server images: %w", apiError)
 	}
 
 	defer res.Body.Close()
@@ -53,7 +59,7 @@ func (c *Client) GetServersImages(ctx context.Context) (ServerImages, error) {
 	serverImages := ServerImages{}
 
 	if err = json.NewDecoder(res.Body).Decode(&serverImages); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding get server images response body: %w", err)
 	}
 
 	return serverImages, nil
