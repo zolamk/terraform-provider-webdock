@@ -13,10 +13,10 @@ type Currency string
 // Price model
 type Price struct {
 	// Price amount
-	Amount *int64 `json:"amount,omitempty"`
+	Amount int64 `json:"amount,omitempty"`
 
 	// Price currency
-	Currency *Currency `json:"currency,omitempty"`
+	Currency Currency `json:"currency,omitempty"`
 }
 
 func errorStatus(code int) bool {

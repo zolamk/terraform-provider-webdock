@@ -24,21 +24,19 @@ func resourceWebdockServer() *schema.Resource {
 func resourceWebdockServerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*CombinedConfig).client
 
-	// Build up our creation options
-	opts := api.CreateServerJSONRequestBody{
-		Name:        d.Get("name").(string),
-		LocationId:  d.Get("location_id").(string),
-		ProfileSlug: d.Get("profile_slug").(string),
-		ImageSlug:   d.Get("image_slug").(string),
+	opts := api.CreateServerRequestBody{
+		Name:           d.Get("name").(string),
+		LocationId:     d.Get("location_id").(string),
+		ProfileSlug:    d.Get("profile_slug").(string),
+		ImageSlug:      d.Get("image_slug").(string),
+		Virtualization: d.Get("virtualization").(string),
 	}
 
 	if attr, ok := d.GetOk("slug"); ok {
-		opts.Slug = attr.(*string)
+		opts.Slug = attr.(string)
 	}
 
-	log.Printf("[DEBUG] Server create configuration: %#v", opts)
-
-	server, callbackID, err := client.CreateServer(context.Background(), opts)
+	server, err := client.CreateServer(context.Background(), opts)
 
 	if err != nil {
 		return diag.Errorf("Error creating server: %s", err)
@@ -46,17 +44,18 @@ func resourceWebdockServerCreate(ctx context.Context, d *schema.ResourceData, me
 
 	d.SetId(server.Slug)
 
-	// Wait for server create action to successfully finish.
-	if *callbackID != "" {
-		err = waitForAction(client, *callbackID)
+	if server.CallbackID != "" {
+		err = waitForAction(client, server.CallbackID)
 		if err != nil {
-			return diag.Errorf("Server (%s) create event (%d) errorred: %s", d.Id(), callbackID, err)
+			return diag.Errorf("Server (%s) create event (%s) errorred: %s", d.Id(), server.CallbackID, err)
 		}
 	} else {
 		return diag.Errorf("Unable to find server (%s) create event.", d.Id())
 	}
 
-	setServerAttributes(d, server)
+	if err := setServerAttributes(d, server); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -65,9 +64,7 @@ func resourceWebdockServerRead(ctx context.Context, d *schema.ResourceData, meta
 	client := meta.(*CombinedConfig).client
 
 	server, err := client.GetServerBySlug(context.Background(), d.Id())
-
 	if err != nil {
-
 		// check if the server no longer exists
 		if strings.Contains(err.Error(), "Not Found") {
 			log.Printf("[WARN] Webdock server (%s) not found", d.Id())
@@ -86,31 +83,57 @@ func resourceWebdockServerRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func setServerAttributes(d *schema.ResourceData, server *api.Server) error {
-	d.Set("name", server.Name)
+	if err := d.Set("name", server.Name); err != nil {
+		return err
+	}
 
-	d.Set("slug", server.Slug)
+	if err := d.Set("slug", server.Slug); err != nil {
+		return err
+	}
 
-	d.Set("location_id", server.Location)
+	if err := d.Set("location_id", server.Location); err != nil {
+		return err
+	}
 
-	d.Set("profile_slug", server.Profile)
+	if err := d.Set("profile_slug", server.Profile); err != nil {
+		return err
+	}
 
-	d.Set("image_slug", server.Image)
+	if err := d.Set("image_slug", server.Image); err != nil {
+		return err
+	}
 
-	d.Set("created_at", server.Date)
+	if err := d.Set("created_at", server.Date); err != nil {
+		return err
+	}
 
-	d.Set("ipv4", server.Ipv4)
+	if err := d.Set("ipv4", server.Ipv4); err != nil {
+		return err
+	}
 
-	d.Set("ipv6", server.Ipv6)
+	if err := d.Set("ipv6", server.Ipv6); err != nil {
+		return err
+	}
 
-	d.Set("status", server.Status)
+	if err := d.Set("status", server.Status); err != nil {
+		return err
+	}
 
-	d.Set("webserver", server.WebServer)
+	if err := d.Set("webserver", server.WebServer); err != nil {
+		return err
+	}
 
-	d.Set("aliases", server.Aliases)
+	if err := d.Set("aliases", server.Aliases); err != nil {
+		return err
+	}
 
-	d.Set("snapshot_runtime", server.SnapshotRunTime)
+	if err := d.Set("snapshot_runtime", server.SnapshotRunTime); err != nil {
+		return err
+	}
 
-	d.Set("description", server.Description)
+	if err := d.Set("description", server.Description); err != nil {
+		return err
+	}
 
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
@@ -126,7 +149,7 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("profile_slug") {
 		_, newProfileSlug := d.GetChange("profile_slug")
 
-		opts := api.ResizeServerModelDTO{
+		opts := api.ResizeServerRequestBody{
 			ProfileSlug: newProfileSlug.(string),
 		}
 
@@ -142,30 +165,29 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.Errorf("Error changing server profile: %v", err)
 		}
 
-		if err = waitForAction(client, *callbackID); err != nil {
-			return diag.Errorf("Server (%s) profile change event (%d) errorred: %s", d.Id(), callbackID, err)
+		if err = waitForAction(client, callbackID); err != nil {
+			return diag.Errorf("Server (%s) profile change event (%s) errorred: %s", d.Id(), callbackID, err)
 		}
 	}
 
 	if d.HasChange("image_slug") {
 		_, newImageSlug := d.GetChange("image_slug")
 
-		opts := api.ReinstallServerModelDTO{
+		opts := api.ReinstallServerRequestBody{
 			ImageSlug: newImageSlug.(string),
 		}
 
 		callbackID, err := client.ReinstallServer(ctx, d.Id(), opts)
-
 		if err != nil {
 			return diag.Errorf("Error reinstalling server: %v", err)
 		}
 
-		if err = waitForAction(client, *callbackID); err != nil {
-			return diag.Errorf("Server (%s) reinstall event (%d) errorred: %s", d.Id(), callbackID, err)
+		if err = waitForAction(client, callbackID); err != nil {
+			return diag.Errorf("Server (%s) reinstall event (%s) errorred: %s", d.Id(), callbackID, err)
 		}
 	}
 
-	opts := api.PatchServerJSONRequestBody{
+	opts := api.PatchServerRequestBody{
 		Name: d.Get("name").(string),
 	}
 
@@ -190,7 +212,7 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("next_action_date") {
 		_, newNextActionDate := d.GetChange("next_action_date")
 
-		opts.NextActionDate = newNextActionDate.(*string)
+		opts.NextActionDate = newNextActionDate.(string)
 	}
 
 	if _, err := client.PatchServer(context.Background(), d.Id(), opts); err != nil {
@@ -213,7 +235,7 @@ func resourceWebdockServerDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("Error deleting server (%s): %s", d.Id(), err)
 	}
 
-	if err = waitForAction(client, *callbackID); err != nil {
+	if err = waitForAction(client, callbackID); err != nil {
 		return diag.Errorf("Error deleting server (%s): %s", d.Id(), err)
 	}
 

@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/google/go-querystring v1.1.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.17.0
+	github.com/stretchr/testify v1.7.1
 )
 
 require (
@@ -42,8 +43,8 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
-	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v4 v4.3.12 // indirect
 	github.com/vmihailenco/tagparser v0.1.1 // indirect

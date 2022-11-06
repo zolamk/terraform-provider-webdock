@@ -22,51 +22,18 @@ func resourceWebdockPublicKey() *schema.Resource {
 func resourceWebdockPublicKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*CombinedConfig).client
 
-	body := api.CreatePublicKeyModel{
+	body := api.CreatePublicKeyRequestBody{
 		Name:      d.Get("name").(string),
 		PublicKey: d.Get("key").(string),
 	}
 
 	publicKey, err := client.CreatePublicKey(ctx, body)
-
 	if err != nil {
 		return diag.Errorf("error creating public key: %v", err)
 	}
 
 	if err = setPublicKeyAttributes(d, publicKey); err != nil {
 		return diag.Errorf("error setting public key: %v", err)
-	}
-
-	return nil
-}
-
-func findPublicKeyById(id string, publicKeys *api.PublicKeys) *api.PublicKey {
-	if publicKeys == nil {
-		return nil
-	}
-
-	for _, publicKey := range *publicKeys {
-		if publicKey.Id.String() == id {
-			return &publicKey
-		}
-	}
-
-	return nil
-}
-
-func setPublicKeyAttributes(d *schema.ResourceData, key *api.PublicKey) error {
-	d.SetId(key.Id.String())
-
-	if err := d.Set("name", key.Name); err != nil {
-		return err
-	}
-
-	if err := d.Set("key", key.Key); err != nil {
-		return err
-	}
-
-	if err := d.Set("created_at", key.Created); err != nil {
-		return err
 	}
 
 	return nil
@@ -79,10 +46,6 @@ func resourceWebdockPublicKeyRead(ctx context.Context, d *schema.ResourceData, m
 
 	if err != nil {
 		return diag.Errorf("error getting public key: %v", err)
-	}
-
-	if err != nil {
-		return diag.Errorf("error converting public key id to int64: %v", err)
 	}
 
 	publicKey := findPublicKeyById(d.Id(), publicKeys)
@@ -112,6 +75,38 @@ func resourceWebdockPublicKeyDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId("")
+
+	return nil
+}
+
+func findPublicKeyById(id string, publicKeys api.PublicKeys) *api.PublicKey {
+	if publicKeys == nil {
+		return nil
+	}
+
+	for _, publicKey := range publicKeys {
+		if publicKey.Id.String() == id {
+			return &publicKey
+		}
+	}
+
+	return nil
+}
+
+func setPublicKeyAttributes(d *schema.ResourceData, key *api.PublicKey) error {
+	d.SetId(key.Id.String())
+
+	if err := d.Set("name", key.Name); err != nil {
+		return err
+	}
+
+	if err := d.Set("key", key.Key); err != nil {
+		return err
+	}
+
+	if err := d.Set("created_at", key.Created); err != nil {
+		return err
+	}
 
 	return nil
 }

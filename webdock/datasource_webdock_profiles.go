@@ -34,7 +34,7 @@ func dataSourceWebdockProfiles() *schema.Resource {
 func dataSourceWebdockProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*CombinedConfig).client
 
-	opts := &api.GetServersProfilesParams{
+	opts := api.GetServersProfilesParams{
 		LocationId: d.Get("location_id").(string),
 	}
 

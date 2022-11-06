@@ -34,7 +34,7 @@ func dataSourceWebdockServers() *schema.Resource {
 func dataSourceWebdockServersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*CombinedConfig).client
 
-	opts := &api.GetServersParams{
+	opts := api.GetServersParams{
 		Status: d.Get("status").(string),
 	}
 

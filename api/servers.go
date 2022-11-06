@@ -12,41 +12,29 @@ import (
 	"github.com/google/go-querystring/query"
 )
 
-// Defines values for ServerDTOStatus.
-const (
-	ServerDTOStatusError        ServerDTOStatus = "error"
-	ServerDTOStatusProvisioning ServerDTOStatus = "provisioning"
-	ServerDTOStatusRebooting    ServerDTOStatus = "rebooting"
-	ServerDTOStatusReinstalling ServerDTOStatus = "reinstalling"
-	ServerDTOStatusRunning      ServerDTOStatus = "running"
-	ServerDTOStatusStarting     ServerDTOStatus = "starting"
-	ServerDTOStatusStopped      ServerDTOStatus = "stopped"
-	ServerDTOStatusStopping     ServerDTOStatus = "stopping"
-)
-
 // Charge summary items model
 type ChargeSummaryItem struct {
 	// Price model
-	Price *PriceDTO `json:"price,omitempty"`
+	Price Price `json:"price,omitempty"`
 
 	// Charge text
-	Text *string `json:"text,omitempty"`
+	Text string `json:"text,omitempty"`
 }
 
 // Server resize model
 type ChargeSummary struct {
 	// True if the amount will be refunded
-	IsRefund *bool `json:"isRefund,omitempty"`
+	IsRefund bool `json:"isRefund,omitempty"`
 
 	// List of charges to be applied or refunded
-	Items *[]ChargeSummaryItem `json:"items,omitempty"`
+	Items []ChargeSummaryItem `json:"items,omitempty"`
 
 	// Server resize model
-	Total *ChargeSummaryTotalDTO `json:"total,omitempty"`
+	Total ChargeSummaryTotal `json:"total,omitempty"`
 }
 
 // PatchServer model
-type PatchServerModelDTO struct {
+type PatchServerRequestBody struct {
 	// Description of the server
 	Description string `json:"description"`
 
@@ -54,32 +42,23 @@ type PatchServerModelDTO struct {
 	Name string `json:"name"`
 
 	// Next action of the server
-	NextActionDate *string `json:"nextActionDate"`
+	NextActionDate string `json:"nextActionDate"`
 
 	// Internal notes or comments regarding the server
 	Notes string `json:"notes"`
 }
 
 // Reinstall Server model
-type ReinstallServerModelDTO struct {
+type ReinstallServerRequestBody struct {
 	// Image slug of the image you want to reload the server with. Any image listed for the server location from /images is valid.
 	ImageSlug string `json:"imageSlug"`
 }
 
 // Resize server model
-type ResizeServerModelDTO struct {
+type ResizeServerRequestBody struct {
 	// Profile slug to resize to
 	ProfileSlug string `json:"profileSlug"`
 }
-
-// PatchServer model
-type PatchServerModel = PatchServerModelDTO
-
-// Post Server model
-type PostServerModel = PostServerModelDTO
-
-// Reinstall Server model
-type ReinstallServerModel = ReinstallServerModelDTO
 
 // GetServersParams defines parameters for GetServers.
 type GetServersParams struct {
@@ -87,54 +66,34 @@ type GetServersParams struct {
 	Status string `form:"status,omitempty" json:"status,omitempty"`
 }
 
-// CreateServerJSONRequestBody defines body for CreateServer for application/json ContentType.
-type CreateServerJSONRequestBody = PostServerModel
-
-// PatchServerJSONRequestBody defines body for PatchServer for application/json ContentType.
-type PatchServerJSONRequestBody = PatchServerModel
-
-// ReinstallServerJSONRequestBody defines body for ReinstallServer for application/json ContentType.
-type ReinstallServerJSONRequestBody = ReinstallServerModel
-
-// ResizeServerJSONRequestBody defines body for ResizeServer for application/json ContentType.
-type ResizeServerJSONRequestBody = ResizeServerModelDTO
-
-// ResizeDryRunJSONRequestBody defines body for ResizeDryRun for application/json ContentType.
-type ResizeDryRunJSONRequestBody = ResizeServerModelDTO
-
 // Warning model
-type WarningDTO struct {
+type Warning struct {
 	// Warning message
-	Data *WarningDTO_Data `json:"data,omitempty"`
+	Data map[string]interface{} `json:"data,omitempty"`
 
 	// Warning message
-	Message *string `json:"message,omitempty"`
+	Message string `json:"message,omitempty"`
 
 	// Warning type
-	Type *string `json:"type,omitempty"`
-}
-
-// Warning message
-type WarningDTO_Data struct {
-	AdditionalProperties map[string]interface{} `json:"-"`
+	Type string `json:"type,omitempty"`
 }
 
 // Server model
 type Server struct {
 	// SSH Password Authentication Enabled for this Server
-	SSHPasswordAuthEnabled *bool `json:"SSHPasswordAuthEnabled,omitempty" mapstructure:"ssh_password_auth_enabled"`
+	SSHPasswordAuthEnabled bool `json:"SSHPasswordAuthEnabled,omitempty" mapstructure:"ssh_password_auth_enabled"`
 
 	// Wordpress lockdown status
-	WordPressLockDown *bool `json:"WordPressLockDown,omitempty" mapstructure:"wordpress_lockdown"`
+	WordPressLockDown bool `json:"WordPressLockDown,omitempty" mapstructure:"wordpress_lockdown"`
 
 	// Aliases - Domain names for the server as known by Webdock. First entry should be treated as the &quot;Main Domain&quot; for the server.
-	Aliases *[]string `json:"aliases,omitempty" mapstructure:"aliases"`
+	Aliases []string `json:"aliases,omitempty" mapstructure:"aliases"`
 
 	// Creation date/time
 	Date string `json:"date,omitempty" mapstructure:"created_at"`
 
 	// Server Description (what's installed here?) as entered by admin in Server Metadata
-	Description *string `json:"description,omitempty" mapstructure:"description"`
+	Description string `json:"description,omitempty" mapstructure:"description"`
 
 	// Server image
 	Image string `json:"image,omitempty" mapstructure:"image_slug"`
@@ -146,31 +105,34 @@ type Server struct {
 	Ipv6 string `json:"ipv6" mapstructure:"ipv6"`
 
 	// Location ID of the server
-	Location *string `json:"location" mapstructure:"location_id"`
+	Location string `json:"location" mapstructure:"location_id"`
 
 	// Server name
 	Name string `json:"name,omitempty" mapstructure:"name"`
 
 	// Next Action date/time as entered by admin in Server Metadata
-	NextActionDate *string `json:"nextActionDate,omitempty" mapstructure:"next_action_date"`
+	NextActionDate string `json:"nextActionDate,omitempty" mapstructure:"next_action_date"`
 
 	// Notes as entered by admin in Server Metadata
-	Notes *string `json:"notes,omitempty" mapstructure:"notes"`
+	Notes string `json:"notes,omitempty" mapstructure:"notes"`
 
 	// Server profile
-	Profile *string `json:"profile" mapstructure:"profile_slug"`
+	Profile string `json:"profile" mapstructure:"profile_slug"`
 
 	// Server slug
 	Slug string `json:"slug,omitempty" mapstructure:"slug"`
 
 	// Last known snapshot runtime (seconds)
-	SnapshotRunTime *int64 `json:"snapshotRunTime,omitempty" mapstructure:"snapshot_run_time"`
+	SnapshotRunTime int64 `json:"snapshotRunTime,omitempty" mapstructure:"snapshot_run_time"`
 
 	// Server status
-	Status *ServerDTOStatus `json:"status,omitempty" mapstructure:"status"`
+	Status string `json:"status,omitempty" mapstructure:"status"`
+
+	// Server virtualization type indicating whether it's a Webdock LXD VPS or a KVM Virtual Machine
+	Virtualization string
 
 	// Webserver type
-	WebServer *string `json:"webServer,omitempty" mapstructure:"webserver"`
+	WebServer string `json:"webServer,omitempty" mapstructure:"webserver"`
 
 	CallbackID string `json:"-" mapstructure:"-"`
 }
@@ -178,29 +140,26 @@ type Server struct {
 // Servers is a collection of Server
 type Servers []Server
 
-// Server status
-type ServerDTOStatus string
-
 // Server resize model
 type ServerResize struct {
 	ChargeSummary *ChargeSummary `json:"chargeSummary,omitempty"`
-	Warnings      *[]WarningDTO  `json:"warnings,omitempty"`
+	Warnings      []Warning      `json:"warnings,omitempty"`
 }
 
 // Server resize model
-type ChargeSummaryTotalDTO struct {
+type ChargeSummaryTotal struct {
 	// Price model
-	SubTotal *PriceDTO `json:"subTotal,omitempty"`
+	SubTotal Price `json:"subTotal,omitempty"`
 
 	// Price model
-	Total *PriceDTO `json:"total,omitempty"`
+	Total Price `json:"total,omitempty"`
 
 	// Price model
-	Vat *PriceDTO `json:"vat,omitempty"`
+	Vat Price `json:"vat,omitempty"`
 }
 
 // Post Server model
-type PostServerModelDTO struct {
+type CreateServerRequestBody struct {
 	// Slug of the server image. Get this from the /images endpoint. You must pass either this parameter or snapshotId
 	ImageSlug string `json:"imageSlug,omitempty"`
 
@@ -214,13 +173,16 @@ type PostServerModelDTO struct {
 	ProfileSlug string `json:"profileSlug"`
 
 	// Suggested Slug (shortname) of the server. Up to 12 alphanumeric chars. This slug is effectively your server ID and anything submitted in this field is merely your suggestion for a slug. If omitted or the suggested slug is already taken, the system will automatically generate an appropriate unique slug based on your server Name or suggestion. Always check the return from this method to determine the actual slug your server ended up receiving.
-	Slug *string `json:"slug,omitempty"`
+	Slug string `json:"slug,omitempty"`
 
 	// SnapshotID from which to create the server. Get this from the /servers/{serverSlug}/snapshots endpoint. You must pass either this parameter or imageSlug.
-	SnapshotId *int64 `json:"snapshotId,omitempty"`
+	SnapshotId int64 `json:"snapshotId,omitempty"`
+
+	// Virtualization type for your new server. container means the server will be a Webdock LXD VPS and kvm means it will be a KVM Virtual machine. If you specify a snapshotId in the request, the server type from which the snapshot belongs much match the virtualization selected. Reason being that KVM images are incompatible with LXD images and vice-versa.
+	Virtualization string `json:"virtualization,omitempty"`
 }
 
-func (c *Client) GetServers(ctx context.Context, params *GetServersParams) (*Servers, error) {
+func (c *Client) GetServers(ctx context.Context, params GetServersParams) (Servers, error) {
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
@@ -248,91 +210,107 @@ func (c *Client) GetServers(ctx context.Context, params *GetServersParams) (*Ser
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error getting server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding get servers error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting servers: %w", apiError)
 	}
 
-	var servers Servers
+	servers := Servers{}
 
 	if err = json.NewDecoder(res.Body).Decode(&servers); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding get servers response body: %w", err)
 	}
 
-	return &servers, nil
+	return servers, nil
 }
 
-func (c *Client) CreateServer(ctx context.Context, body CreateServerJSONRequestBody) (*Server, *string, error) {
+func (c *Client) CreateServer(ctx context.Context, body CreateServerRequestBody) (*Server, error) {
 	var bodyReader io.Reader
 
 	buf, err := json.Marshal(body)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	bodyReader = bytes.NewReader(buf)
 
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	serverURL.Path += "servers"
 
 	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, nil, fmt.Errorf("error creating server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding create server error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error creating server: %w", apiError)
 	}
 
-	var server Server
+	server := Server{}
 
 	if err = json.NewDecoder(res.Body).Decode(&server); err != nil {
-		return nil, nil, err
+		return nil, fmt.Errorf("error decoding create server response body: %w", err)
 	}
 
-	callbackID := res.Header.Get("X-Callback-Id")
+	server.CallbackID = res.Header.Get("X-Callback-Id")
 
-	return &server, &callbackID, nil
+	return &server, nil
 }
 
-func (c *Client) DeleteServer(ctx context.Context, serverSlug string) (*string, error) {
+func (c *Client) DeleteServer(ctx context.Context, serverSlug string) (string, error) {
 	serverSlug = url.PathEscape(serverSlug)
 
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	serverURL.Path += fmt.Sprintf("servers/%s", serverSlug)
 
 	req, err := http.NewRequestWithContext(ctx, "DELETE", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error deleting server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return "", fmt.Errorf("error decoding delete server error response body: %w", err)
+		}
+
+		return "", fmt.Errorf("error deleting server: %w", apiError)
 	}
 
-	callbackID := res.Header.Get("X-Callback-Id")
-
-	return &callbackID, nil
+	return res.Header.Get("X-Callback-Id"), nil
 }
 
 func (c *Client) GetServerBySlug(ctx context.Context, serverSlug string) (*Server, error) {
@@ -358,19 +336,25 @@ func (c *Client) GetServerBySlug(ctx context.Context, serverSlug string) (*Serve
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error getting server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding get server by slug error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting server by slug: %w", apiError)
 	}
 
 	var server Server
 
 	if err = json.NewDecoder(res.Body).Decode(&server); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding get server by slug response body: %w", err)
 	}
 
 	return &server, nil
 }
 
-func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchServerJSONRequestBody) (*Server, error) {
+func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchServerRequestBody) (*Server, error) {
 	var bodyReader io.Reader
 
 	buf, err := json.Marshal(body)
@@ -402,24 +386,30 @@ func (c *Client) PatchServer(ctx context.Context, serverSlug string, body PatchS
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error patching server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding patch server error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error patching server: %w", apiError)
 	}
 
 	var server Server
 
 	if err = json.NewDecoder(res.Body).Decode(&server); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding patch server response body: %w", err)
 	}
 
 	return &server, nil
 }
 
-func (c *Client) ReinstallServer(ctx context.Context, serverSlug string, body ReinstallServerJSONRequestBody) (*string, error) {
+func (c *Client) ReinstallServer(ctx context.Context, serverSlug string, body ReinstallServerRequestBody) (string, error) {
 	var bodyReader io.Reader
 
 	buf, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	bodyReader = bytes.NewReader(buf)
@@ -428,38 +418,42 @@ func (c *Client) ReinstallServer(ctx context.Context, serverSlug string, body Re
 
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	serverURL.Path += fmt.Sprintf("servers/%s/actions/reinstall", serverSlug)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error reinstalling server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return "", fmt.Errorf("error decoding reinstall server error response body: %w", err)
+		}
+
+		return "", fmt.Errorf("error reinstalling server: %w", apiError)
 	}
 
-	callbackID := res.Header.Get("X-Callback-Id")
-
-	return &callbackID, nil
+	return res.Header.Get("X-Callback-Id"), nil
 }
 
-func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body ResizeServerJSONRequestBody) (*string, error) {
+func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (string, error) {
 	var bodyReader io.Reader
 
 	buf, err := json.Marshal(body)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	bodyReader = bytes.NewReader(buf)
@@ -468,33 +462,37 @@ func (c *Client) ResizeServer(ctx context.Context, serverSlug string, body Resiz
 
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	serverURL.Path += fmt.Sprintf("servers/%s/actions/resize", serverSlug)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error resizing server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return "", fmt.Errorf("error decoding resize server error response body: %w", err)
+		}
+
+		return "", fmt.Errorf("error resizing server: %w", apiError)
 	}
 
-	callbackID := res.Header.Get("X-Callback-Id")
-
-	return &callbackID, nil
+	return res.Header.Get("X-Callback-Id"), nil
 }
 
-func (c *Client) ResizeDryRun(ctx context.Context, serverSlug string, body ResizeDryRunJSONRequestBody) (*ServerResize, error) {
+func (c *Client) ResizeDryRun(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (*ServerResize, error) {
 	var bodyReader io.Reader
 
 	buf, err := json.Marshal(body)
@@ -526,13 +524,19 @@ func (c *Client) ResizeDryRun(ctx context.Context, serverSlug string, body Resiz
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error resizing server: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding dry run resize server error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error dry run resizing server: %w", apiError)
 	}
 
-	var serverResize ServerResize
+	serverResize := ServerResize{}
 
 	if err = json.NewDecoder(res.Body).Decode(&serverResize); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding dry run resize server response body: %w", err)
 	}
 
 	return &serverResize, nil

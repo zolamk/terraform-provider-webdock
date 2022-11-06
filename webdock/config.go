@@ -46,7 +46,6 @@ func waitForAction(client *api.Client, callbackID string) error {
 		working   = "working"
 		target    = "finished"
 		refreshfn = func() (result interface{}, state string, err error) {
-
 			opts := &api.GetEventsParams{}
 
 			events, err := client.GetEvents(context.Background(), opts)
@@ -55,14 +54,13 @@ func waitForAction(client *api.Client, callbackID string) error {
 				return nil, "", err
 			}
 
-			if events == nil || len(*events) == 0 {
+			if len(events) == 0 {
 				return nil, "", errors.New("error getting event state: response body empty")
 			}
 
-			event := (*events)[0]
+			event := (events)[0]
 
 			return event, string(event.Status), nil
-
 		}
 	)
 	_, err := (&resource.StateChangeConf{
