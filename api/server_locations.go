@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 )
@@ -50,10 +51,20 @@ func (c *Client) GetServersLocations(ctx context.Context) (ServerLocations, erro
 
 	defer res.Body.Close()
 
+	if errorStatus(res.StatusCode) {
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding get server locations error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting server locations: %w", apiError)
+	}
+
 	locations := ServerLocations{}
 
 	if err = json.NewDecoder(res.Body).Decode(&locations); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding get server locations response body: %w", err)
 	}
 
 	return locations, nil
