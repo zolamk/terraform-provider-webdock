@@ -11,7 +11,7 @@ import (
 )
 
 // PublicKey model
-type CreatePublicKeyModel struct {
+type CreatePublicKeyRequestBody struct {
 	// PublicKey name
 	Name string `json:"name"`
 
@@ -57,16 +57,26 @@ func (c *Client) GetPublicKeys(ctx context.Context) (PublicKeys, error) {
 
 	defer res.Body.Close()
 
+	if errorStatus(res.StatusCode) {
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding get public keys error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting public keys: %w", apiError)
+	}
+
 	var publicKeys PublicKeys
 
 	if err = json.NewDecoder(res.Body).Decode(&publicKeys); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding get public keys response body: %w", err)
 	}
 
 	return publicKeys, nil
 }
 
-func (c *Client) CreatePublicKey(ctx context.Context, body CreatePublicKeyModel) (*PublicKey, error) {
+func (c *Client) CreatePublicKey(ctx context.Context, body CreatePublicKeyRequestBody) (*PublicKey, error) {
 	var bodyReader io.Reader
 
 	buf, err := json.Marshal(body)
@@ -96,13 +106,19 @@ func (c *Client) CreatePublicKey(ctx context.Context, body CreatePublicKeyModel)
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error creating public key: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding create public key error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error creating public key: %w", apiError)
 	}
 
 	publicKey := &PublicKey{}
 
 	if err = json.NewDecoder(res.Body).Decode(publicKey); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding create public key response body: %w", err)
 	}
 
 	return publicKey, nil
@@ -129,7 +145,13 @@ func (c *Client) DeletePublicKey(ctx context.Context, id int64) error {
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
-		return fmt.Errorf("error deleting public key: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return fmt.Errorf("error decoding delete public key error response body: %w", err)
+		}
+
+		return fmt.Errorf("error deleting public key: %w", apiError)
 	}
 
 	return nil
