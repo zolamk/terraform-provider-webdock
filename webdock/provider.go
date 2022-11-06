@@ -30,11 +30,13 @@ func Provider() *schema.Provider {
 			"webdock_profiles":    dataSourceWebdockProfiles(),
 			"webdock_locations":   dataSourceWebdockLocations(),
 			"webdock_public_keys": dataSourceWebdockPublicKeys(),
+			"webdock_shell_users": dataSourceWebdockShellUsers(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
 			"webdock_server":     resourceWebdockServer(),
 			"webdock_public_key": resourceWebdockPublicKey(),
+			"webdock_shell_user": resourceWebdockShellUser(),
 		},
 	}
 

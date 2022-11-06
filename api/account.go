@@ -60,7 +60,13 @@ func (c *Client) GetAccountInformation(ctx context.Context) (*AccountInformation
 	}
 
 	if errorStatus(res.StatusCode) {
-		return nil, fmt.Errorf("error getting account information: %s", res.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding account information error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting account information: %w", apiError)
 	}
 
 	defer res.Body.Close()
@@ -68,7 +74,7 @@ func (c *Client) GetAccountInformation(ctx context.Context) (*AccountInformation
 	account := &AccountInformation{}
 
 	if err := json.NewDecoder(res.Body).Decode(account); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding account information response body: %w", err)
 	}
 
 	return account, nil

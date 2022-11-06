@@ -31,6 +31,15 @@ func (c *ClientTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.DefaultTransport.RoundTrip(req)
 }
 
+type APIError struct {
+	ID      int    `json:"id"`
+	Message string `json:"message"`
+}
+
+func (e APIError) Error() string {
+	return e.Message
+}
+
 // Client which conforms to the OpenAPI3 specification for this service.
 type Client struct {
 	// The endpoint of the server conforming to this interface, with scheme,
@@ -119,7 +128,7 @@ type ClientInterface interface {
 	GetServers(ctx context.Context, params *GetServersParams) (*Servers, error)
 
 	// CreateServer request
-	CreateServer(ctx context.Context, body CreateServerJSONRequestBody) (string, error)
+	CreateServer(ctx context.Context, body CreateServerRequestBody) (string, error)
 
 	// DeleteServer request
 	DeleteServer(ctx context.Context, serverSlug string) (*string, error)
@@ -130,17 +139,17 @@ type ClientInterface interface {
 	// PatchServer request with any body
 	PatchServerWithBody(ctx context.Context, serverSlug string, contentType string, body io.Reader) (*http.Response, error)
 
-	PatchServer(ctx context.Context, serverSlug string, body PatchServerJSONRequestBody) (*http.Response, error)
+	PatchServer(ctx context.Context, serverSlug string, body PatchServerRequestBody) (*http.Response, error)
 
-	ReinstallServer(ctx context.Context, serverSlug string, body ReinstallServerJSONRequestBody) (*http.Response, error)
+	ReinstallServer(ctx context.Context, serverSlug string, body ReinstallServerRequestBody) (*http.Response, error)
 
-	ResizeServer(ctx context.Context, serverSlug string, body ResizeServerJSONRequestBody) (*http.Response, error)
+	ResizeServer(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (*http.Response, error)
 
-	ResizeDryRun(ctx context.Context, serverSlug string, body ResizeDryRunJSONRequestBody) (*http.Response, error)
+	ResizeDryRun(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (*http.Response, error)
 
 	GetShellUsers(ctx context.Context, serverSlug string) ([]ShellUser, error)
 
-	CreateShellUser(ctx context.Context, serverSlug string, shellUser *ShellUser) (*ShellUser, error)
+	CreateShellUser(ctx context.Context, serverSlug string, shellUser *CreateShellUserBody) (*ShellUser, error)
 
 	DeleteShellUser(ctx context.Context, serverSlug string, shellUserID int64) (string, error)
 
