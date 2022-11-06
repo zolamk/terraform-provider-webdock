@@ -104,11 +104,11 @@ func TestGetServerImages(t *testing.T) {
 
 			assert.Nil(t, err)
 
-			publicKeys, err := client.GetServersImages(test.ctx)
+			serverImages, err := client.GetServersImages(test.ctx)
 
 			assert.Equal(t, test.wantErr, err)
 
-			assert.Equal(t, test.wantResponse, publicKeys)
+			assert.Equal(t, test.wantResponse, serverImages)
 		})
 	}
 }

@@ -103,11 +103,11 @@ func TestGetServerProfiles(t *testing.T) {
 
 			assert.Nil(t, err)
 
-			publicKeys, err := client.GetServersProfiles(test.ctx, test.params)
+			serverProfiles, err := client.GetServersProfiles(test.ctx, test.params)
 
 			assert.Equal(t, test.wantErr, err)
 
-			assert.Equal(t, test.wantResponse, publicKeys)
+			assert.Equal(t, test.wantResponse, serverProfiles)
 		})
 	}
 }

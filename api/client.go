@@ -109,7 +109,7 @@ type ClientInterface interface {
 	// GetPublicKeys request
 	GetPublicKeys(ctx context.Context) (*PublicKeys, error)
 
-	CreatePublicKey(ctx context.Context, body CreatePublicKeyModel) (*PublicKey, error)
+	CreatePublicKey(ctx context.Context, body CreatePublicKeyRequestBody) (*PublicKey, error)
 
 	// DeletePublicKey request
 	DeletePublicKey(ctx context.Context, id int64) error
@@ -151,7 +151,7 @@ type ClientInterface interface {
 
 	GetShellUsers(ctx context.Context, serverSlug string) ([]ShellUser, error)
 
-	CreateShellUser(ctx context.Context, serverSlug string, shellUser *CreateShellUserBody) (*ShellUser, error)
+	CreateShellUser(ctx context.Context, serverSlug string, shellUser *CreateShellUserRequestBody) (*ShellUser, error)
 
 	DeleteShellUser(ctx context.Context, serverSlug string, shellUserID int64) (string, error)
 

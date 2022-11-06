@@ -129,11 +129,11 @@ func TestGetServerLocations(t *testing.T) {
 
 			assert.Nil(t, err)
 
-			publicKeys, err := client.GetServersLocations(test.ctx)
+			serverLocations, err := client.GetServersLocations(test.ctx)
 
 			assert.Equal(t, test.wantErr, err)
 
-			assert.Equal(t, test.wantResponse, publicKeys)
+			assert.Equal(t, test.wantResponse, serverLocations)
 		})
 	}
 }
