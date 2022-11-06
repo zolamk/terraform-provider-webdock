@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -10,7 +11,7 @@ import (
 )
 
 // CPU model
-type CPUDTO struct {
+type CPU struct {
 	// Number of cores
 	Cores int64 `json:"cores,omitempty" mapstructure:"cores"`
 
@@ -27,7 +28,7 @@ type GetServersProfilesParams struct {
 // ServerProfile model
 type ServerProfile struct {
 	// CPU model
-	CPU CPUDTO `json:"cpu,omitempty" mapstructure:"cpu"`
+	CPU CPU `json:"cpu,omitempty" mapstructure:"cpu"`
 
 	// Disk size (in MiB)
 	Disk int64 `json:"disk,omitempty" mapstructure:"disk"`
@@ -36,7 +37,7 @@ type ServerProfile struct {
 	Name string `json:"name,omitempty" mapstructure:"name"`
 
 	// Price model
-	Price PriceDTO `json:"price,omitempty" mapstructure:"-"`
+	Price Price `json:"price,omitempty" mapstructure:"-"`
 
 	// RAM memory (in MiB)
 	RAM int64 `json:"ram,omitempty" mapstructure:"ram"`
@@ -48,7 +49,7 @@ type ServerProfile struct {
 // ServerProfiles is a collection of ServerProfile
 type ServerProfiles []ServerProfile
 
-func (c *Client) GetServersProfiles(ctx context.Context, params *GetServersProfilesParams) (ServerProfiles, error) {
+func (c *Client) GetServersProfiles(ctx context.Context, params GetServersProfilesParams) (ServerProfiles, error) {
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err
@@ -75,10 +76,20 @@ func (c *Client) GetServersProfiles(ctx context.Context, params *GetServersProfi
 
 	defer res.Body.Close()
 
+	if errorStatus(res.StatusCode) {
+		apiError := APIError{}
+
+		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding get server profiles error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting server profiles: %w", apiError)
+	}
+
 	profiles := ServerProfiles{}
 
 	if err := json.NewDecoder(res.Body).Decode(&profiles); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding get server profiles response body: %w", err)
 	}
 
 	return profiles, err
