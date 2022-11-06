@@ -23,7 +23,9 @@ type ClientTransport struct {
 
 func (c *ClientTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for _, r := range c.client.RequestEditors {
-		r(req.Context(), req)
+		if err := r(req.Context(), req); err != nil {
+			return nil, err
+		}
 	}
 
 	req.Header.Add("Content-Type", "application/json")

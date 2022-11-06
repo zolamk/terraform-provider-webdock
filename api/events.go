@@ -48,7 +48,7 @@ type EventLog struct {
 	CallbackId string `json:"callbackId,omitempty"`
 
 	// End Time of the event
-	EndTime *string `json:"endTime"`
+	EndTime string `json:"endTime"`
 
 	// Event Type
 	EventType string `json:"eventType,omitempty"`
@@ -99,7 +99,13 @@ func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (Events
 	defer resp.Body.Close()
 
 	if errorStatus(resp.StatusCode) {
-		return nil, fmt.Errorf("error getting events: %s", resp.Status)
+		apiError := APIError{}
+
+		if err := json.NewDecoder(resp.Body).Decode(&apiError); err != nil {
+			return nil, fmt.Errorf("error decoding get events error response body: %w", err)
+		}
+
+		return nil, fmt.Errorf("error getting events: %w", apiError)
 	}
 
 	decoder := json.NewDecoder(resp.Body)
@@ -107,7 +113,7 @@ func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (Events
 	events := Events{}
 
 	if err := decoder.Decode(&events); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error decoding get events response body: %w", err)
 	}
 
 	return events, nil
