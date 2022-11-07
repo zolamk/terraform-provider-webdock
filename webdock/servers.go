@@ -95,6 +95,7 @@ func serverSchema() map[string]*schema.Schema {
 		"virtualization": {
 			Type:        schema.TypeString,
 			Default:     "container",
+			Optional:    true,
 			Description: "Virtualization type for your new server. container means the server will be a Webdock LXD VPS and kvm means it will be a KVM Virtual machine. If you specify a snapshotId in the request, the server type from which the snapshot belongs much match the virtualization selected. Reason being that KVM images are incompatible with LXD images and vice-versa.",
 		},
 	}
