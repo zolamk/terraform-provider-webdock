@@ -32,7 +32,7 @@ func dataSourceWebdockImagesRead(ctx context.Context, d *schema.ResourceData, me
 	images, err := client.GetServersImages(ctx)
 
 	if err != nil {
-		return diag.Errorf("error getting images: %s", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("images")

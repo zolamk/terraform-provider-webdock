@@ -60,15 +60,15 @@ func resourceWebdockShellUserCreate(ctx context.Context, d *schema.ResourceData,
 
 	shellUser, err := client.CreateShellUser(ctx, d.Get("server_slug").(string), createShellUserBody)
 	if err != nil {
-		return diag.Errorf("error creating shell user: %v", err)
+		return diag.FromErr(err)
 	}
 
 	if err := waitForAction(client, shellUser.CallbackID); err != nil {
-		return diag.Errorf("error creating shell user: %v", err)
+		return diag.Errorf("error creating shell user: %s", err)
 	}
 
 	if err = setShellUserAttributes(d, shellUser); err != nil {
-		return diag.Errorf("error setting shell user: %v", err)
+		return diag.Errorf("error setting shell user: %s", err)
 	}
 
 	return nil

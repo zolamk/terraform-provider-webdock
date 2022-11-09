@@ -30,7 +30,7 @@ func dataSourceWebdockPublicKeysRead(ctx context.Context, d *schema.ResourceData
 	publicKeys, err := client.GetPublicKeys(ctx)
 
 	if err != nil {
-		return diag.Errorf("error getting public keys: %s", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("public_keys")

@@ -35,7 +35,7 @@ type AccountInformation struct {
 	UserEmail string `json:"userEmail,omitempty"`
 
 	// User ID
-	UserId int64 `json:"userId,omitempty"`
+	UserId json.Number `json:"userId,omitempty"`
 
 	// User name
 	UserName string `json:"userName,omitempty"`
@@ -51,12 +51,12 @@ func (c *Client) GetAccountInformation(ctx context.Context) (*AccountInformation
 
 	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting account information: %w", err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting account information: %w", err)
 	}
 
 	if errorStatus(res.StatusCode) {

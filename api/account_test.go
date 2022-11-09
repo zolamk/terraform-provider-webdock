@@ -88,7 +88,7 @@ func TestGetAccountInformation(t *testing.T) {
 				TeamLeader:                "xula@example.com",
 				UserAvatar:                "",
 				UserEmail:                 "zola@example.com",
-				UserId:                    1,
+				UserId:                    json.Number("1"),
 				UserName:                  "Example Name",
 			},
 		},

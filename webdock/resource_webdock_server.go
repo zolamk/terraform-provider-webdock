@@ -39,7 +39,7 @@ func resourceWebdockServerCreate(ctx context.Context, d *schema.ResourceData, me
 	server, err := client.CreateServer(context.Background(), opts)
 
 	if err != nil {
-		return diag.Errorf("Error creating server: %s", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId(server.Slug)
@@ -47,10 +47,10 @@ func resourceWebdockServerCreate(ctx context.Context, d *schema.ResourceData, me
 	if server.CallbackID != "" {
 		err = waitForAction(client, server.CallbackID)
 		if err != nil {
-			return diag.Errorf("Server (%s) create event (%s) errorred: %s", d.Id(), server.CallbackID, err)
+			return diag.Errorf("server (%s) create event (%s) errorred: %s", d.Id(), server.CallbackID, err)
 		}
 	} else {
-		return diag.Errorf("Unable to find server (%s) create event.", d.Id())
+		return diag.Errorf("unable to find server (%s) create event.", d.Id())
 	}
 
 	if err := setServerAttributes(d, server); err != nil {
@@ -156,17 +156,17 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 		_, err := client.ResizeDryRun(context.Background(), d.Id(), opts)
 
 		if err != nil {
-			return diag.Errorf("Error changing server profile: %v", err)
+			return diag.FromErr(err)
 		}
 
 		callbackID, err := client.ResizeServer(context.Background(), d.Id(), opts)
 
 		if err != nil {
-			return diag.Errorf("Error changing server profile: %v", err)
+			return diag.FromErr(err)
 		}
 
 		if err = waitForAction(client, callbackID); err != nil {
-			return diag.Errorf("Server (%s) profile change event (%s) errorred: %s", d.Id(), callbackID, err)
+			return diag.Errorf("server (%s) profile change event (%s) errorred: %s", d.Id(), callbackID, err)
 		}
 	}
 
@@ -179,11 +179,11 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 
 		callbackID, err := client.ReinstallServer(ctx, d.Id(), opts)
 		if err != nil {
-			return diag.Errorf("Error reinstalling server: %v", err)
+			return diag.FromErr(err)
 		}
 
 		if err = waitForAction(client, callbackID); err != nil {
-			return diag.Errorf("Server (%s) reinstall event (%s) errorred: %s", d.Id(), callbackID, err)
+			return diag.Errorf("server (%s) reinstall event (%s) errorred: %s", d.Id(), callbackID, err)
 		}
 	}
 
@@ -216,7 +216,7 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if _, err := client.PatchServer(context.Background(), d.Id(), opts); err != nil {
-		return diag.Errorf("Error updating server (%s): %s", d.Id(), err)
+		return diag.FromErr(err)
 	}
 
 	return resourceWebdockServerRead(ctx, d, meta)
@@ -232,11 +232,11 @@ func resourceWebdockServerDelete(ctx context.Context, d *schema.ResourceData, me
 			return nil
 		}
 
-		return diag.Errorf("Error deleting server (%s): %s", d.Id(), err)
+		return diag.FromErr(err)
 	}
 
 	if err = waitForAction(client, callbackID); err != nil {
-		return diag.Errorf("Error deleting server (%s): %s", d.Id(), err)
+		diag.Errorf("server (%s) delete event (%s) errorred: %s", d.Id(), callbackID, err)
 	}
 
 	d.SetId("")

@@ -10,6 +10,10 @@ import (
 	"net/url"
 )
 
+const (
+	errGettingServerShellUsers = "error getting server shell users"
+)
+
 type CreateShellUserRequestBody struct {
 	Username   string `json:"username,omitempty"`
 	Password   string `json:"password,omitempty"`
@@ -34,19 +38,19 @@ type ShellUsers []ShellUser
 func (c *Client) GetShellUsers(ctx context.Context, serverSlug string) (ShellUsers, error) {
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", errGettingServerShellUsers, err)
 	}
 
 	serverURL.Path += fmt.Sprintf("servers/%s/shellUsers", serverSlug)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", errGettingServerShellUsers, err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", errGettingServerShellUsers, err)
 	}
 
 	defer res.Body.Close()
@@ -58,7 +62,7 @@ func (c *Client) GetShellUsers(ctx context.Context, serverSlug string) (ShellUse
 			return nil, fmt.Errorf("error decoding get server shell users error response body: %w", err)
 		}
 
-		return nil, fmt.Errorf("error getting server shell users: %w", apiError)
+		return nil, fmt.Errorf("%s: %w", errGettingServerShellUsers, apiError)
 	}
 
 	shellUsers := ShellUsers{}

@@ -36,12 +36,12 @@ func (c *Client) GetServersImages(ctx context.Context) (ServerImages, error) {
 
 	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting server images: %w", err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting server images: %w", err)
 	}
 
 	if errorStatus(res.StatusCode) {

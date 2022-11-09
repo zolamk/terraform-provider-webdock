@@ -54,7 +54,7 @@ type EventLog struct {
 	EventType string `json:"eventType,omitempty"`
 
 	// Event log ID
-	Id int64 `json:"id,omitempty"`
+	Id json.Number `json:"id,omitempty"`
 
 	// Any &quot;Message&quot; or return data from the action once finished executing.
 	Message string `json:"message,omitempty"`
@@ -88,12 +88,12 @@ func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (Events
 
 	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting events: %w", err)
 	}
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting events: %w", err)
 	}
 
 	defer resp.Body.Close()

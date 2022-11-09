@@ -41,7 +41,7 @@ func dataSourceWebdockServersRead(ctx context.Context, d *schema.ResourceData, m
 	servers, err := client.GetServers(ctx, opts)
 
 	if err != nil {
-		return diag.Errorf("error getting servers: %s", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("servers")

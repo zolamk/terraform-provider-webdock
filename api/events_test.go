@@ -36,7 +36,7 @@ func TestGetEvents(t *testing.T) {
 			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusUnauthorized)
 				_ = json.NewEncoder(w).Encode(map[string]interface{}{
-					"id":      "1",
+					"id":      true,
 					"message": "unexpected error response",
 				})
 			})),
@@ -44,8 +44,8 @@ func TestGetEvents(t *testing.T) {
 				Field:  "id",
 				Struct: "APIError",
 				Type:   reflect.TypeOf(1),
-				Value:  "string",
-				Offset: 9,
+				Value:  "bool",
+				Offset: 10,
 			}),
 			ctx: context.Background(),
 		},
@@ -53,7 +53,7 @@ func TestGetEvents(t *testing.T) {
 			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				_ = json.NewEncoder(w).Encode([]map[string]interface{}{
 					{
-						"id": "1",
+						"id": true,
 					},
 				})
 			})),
@@ -61,9 +61,9 @@ func TestGetEvents(t *testing.T) {
 			wantErr: fmt.Errorf("error decoding get events response body: %w", &json.UnmarshalTypeError{
 				Field:  "id",
 				Struct: "EventLog",
-				Type:   reflect.TypeOf(int64(1)),
-				Value:  "string",
-				Offset: 10,
+				Type:   reflect.TypeOf(json.Number("1")),
+				Value:  "bool",
+				Offset: 11,
 			}),
 		},
 		"when request is successful": {
@@ -92,7 +92,7 @@ func TestGetEvents(t *testing.T) {
 			ctx: context.Background(),
 			wantResponse: api.Events{
 				{
-					Id:         1,
+					Id:         json.Number("1"),
 					StartTime:  "25/10/2022 05:11:34",
 					EndTime:    "25/10/2022 05:13:34",
 					CallbackId: "3AtrHlEVRg",
@@ -101,7 +101,7 @@ func TestGetEvents(t *testing.T) {
 					Status:     "waiting",
 				},
 				{
-					Id:         2,
+					Id:         json.Number("2"),
 					StartTime:  "25/10/2022 05:11:34",
 					EndTime:    "25/10/2022 05:13:34",
 					CallbackId: "3AtrHlEVRg",

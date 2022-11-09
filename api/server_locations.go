@@ -41,12 +41,12 @@ func (c *Client) GetServersLocations(ctx context.Context) (ServerLocations, erro
 
 	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting server locations: %w", err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting server locations: %w", err)
 	}
 
 	defer res.Body.Close()

@@ -41,7 +41,7 @@ func dataSourceWebdockProfilesRead(ctx context.Context, d *schema.ResourceData, 
 	profiles, err := client.GetServersProfiles(ctx, opts)
 
 	if err != nil {
-		return diag.Errorf("error getting profiles: %s", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("profiles")

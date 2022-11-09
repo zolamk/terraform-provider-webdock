@@ -29,7 +29,7 @@ func resourceWebdockPublicKeyCreate(ctx context.Context, d *schema.ResourceData,
 
 	publicKey, err := client.CreatePublicKey(ctx, body)
 	if err != nil {
-		return diag.Errorf("error creating public key: %v", err)
+		return diag.FromErr(err)
 	}
 
 	if err = setPublicKeyAttributes(d, publicKey); err != nil {
@@ -71,7 +71,7 @@ func resourceWebdockPublicKeyDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if err = client.DeletePublicKey(ctx, id); err != nil {
-		return diag.Errorf("error deleting public key: %v", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("")

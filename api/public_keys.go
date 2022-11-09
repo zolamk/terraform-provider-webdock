@@ -47,12 +47,12 @@ func (c *Client) GetPublicKeys(ctx context.Context) (PublicKeys, error) {
 
 	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting public keys: %w", err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting public keys: %w", err)
 	}
 
 	defer res.Body.Close()
@@ -95,12 +95,12 @@ func (c *Client) CreatePublicKey(ctx context.Context, body CreatePublicKeyReques
 
 	req, err := http.NewRequestWithContext(ctx, "POST", serverURL.String(), bodyReader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating public key: %w", err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating public key: %w", err)
 	}
 
 	defer res.Body.Close()
@@ -134,12 +134,12 @@ func (c *Client) DeletePublicKey(ctx context.Context, id int64) error {
 
 	req, err := http.NewRequestWithContext(ctx, "DELETE", serverURL.String(), nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting public key: %w", err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("error deleting public key: %w", err)
 	}
 
 	defer res.Body.Close()

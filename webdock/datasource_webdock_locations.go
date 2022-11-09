@@ -30,7 +30,7 @@ func dataSourceWebdockLocationsRead(ctx context.Context, d *schema.ResourceData,
 	locations, err := client.GetServersLocations(ctx)
 
 	if err != nil {
-		return diag.Errorf("error getting locations: %s", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("locations")

@@ -59,19 +59,19 @@ func (c *Client) GetServersProfiles(ctx context.Context, params GetServersProfil
 
 	queryValues, err := query.Values(params)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting server profiles: %w", err)
 	}
 
 	serverURL.RawQuery = queryValues.Encode()
 
 	req, err := http.NewRequestWithContext(ctx, "GET", serverURL.String(), nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting server profiles: %w", err)
 	}
 
 	res, err := c.Client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error getting server profiles: %w", err)
 	}
 
 	defer res.Body.Close()

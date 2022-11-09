@@ -35,7 +35,7 @@ func dataSourceWebdockShellUsersRead(ctx context.Context, d *schema.ResourceData
 
 	shellUsers, err := client.GetShellUsers(ctx, d.Get("server_slug").(string))
 	if err != nil {
-		return diag.Errorf("error getting shell users: %s", err)
+		return diag.FromErr(err)
 	}
 
 	d.SetId("shell_users")

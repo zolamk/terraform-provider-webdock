@@ -2,7 +2,6 @@ package webdock
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -57,12 +56,10 @@ func datasourceWebdockAccountRead(ctx context.Context, rd *schema.ResourceData, 
 	account, err := client.GetAccountInformation(ctx)
 
 	if err != nil {
-		return diag.Errorf("Error getting account information: %s", err)
+		return diag.FromErr(err)
 	}
 
-	id := strconv.FormatInt(account.UserId, 10)
-
-	rd.SetId(id)
+	rd.SetId(account.UserId.String())
 
 	if err = rd.Set("account_balance", account.AccountBalance); err != nil {
 		return diag.Errorf("Error setting account_balance: %s", err)
