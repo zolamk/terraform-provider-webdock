@@ -24,6 +24,13 @@ server {
   }
 }
 
+client {
+  enabled = true
+  server_join {
+    retry_join = [\"$3\"]
+  }
+}
+
 telemetry {
   publish_allocation_metrics = true
   publish_node_metrics = true
