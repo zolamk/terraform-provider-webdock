@@ -63,7 +63,7 @@ func resourceWebdockShellUserCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if err := waitForAction(client, shellUser.CallbackID); err != nil {
+	if err := waitForAction(ctx, client, shellUser.CallbackID); err != nil {
 		return diag.Errorf("error creating shell user: %s", err)
 	}
 
@@ -87,7 +87,7 @@ func resourceWebdockShellUserUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error updating shell user: %v", err)
 	}
 
-	if err := waitForAction(client, shellUser.CallbackID); err != nil {
+	if err := waitForAction(ctx, client, shellUser.CallbackID); err != nil {
 		return diag.Errorf("error updating shell user: %v", err)
 	}
 
@@ -111,7 +111,7 @@ func resourceWebdockShellUserDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error deleting shell user: %v", err)
 	}
 
-	if err = waitForAction(client, callbackID); err != nil {
+	if err = waitForAction(ctx, client, callbackID); err != nil {
 		return diag.Errorf("Error deleting shell user (%s): %v", d.Id(), err)
 	}
 

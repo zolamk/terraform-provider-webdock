@@ -42,16 +42,6 @@ func serverSchema() map[string]*schema.Schema {
 			Required:    true,
 			Description: "Server name",
 		},
-		"next_action_date": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Next action date/time as entered by admin in Server Metadata",
-		},
-		"notes": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Notes as entered by admin in Server Metadata",
-		},
 		"profile_slug": {
 			Type:        schema.TypeString,
 			Required:    true,
@@ -71,11 +61,6 @@ func serverSchema() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Computed:    true,
 			Description: "Server status",
-		},
-		"description": {
-			Type:        schema.TypeString,
-			Computed:    true,
-			Description: "Server description (what's installed here?) as entered by admin in Server Metadata",
 		},
 		"wordpress_lockdown": {
 			Type:        schema.TypeBool,

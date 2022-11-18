@@ -45,7 +45,7 @@ func resourceWebdockServerCreate(ctx context.Context, d *schema.ResourceData, me
 	d.SetId(server.Slug)
 
 	if server.CallbackID != "" {
-		err = waitForAction(client, server.CallbackID)
+		err = waitForAction(ctx, client, server.CallbackID)
 		if err != nil {
 			return diag.Errorf("server (%s) create event (%s) errorred: %s", d.Id(), server.CallbackID, err)
 		}
@@ -131,10 +131,6 @@ func setServerAttributes(d *schema.ResourceData, server *api.Server) error {
 		return err
 	}
 
-	if err := d.Set("description", server.Description); err != nil {
-		return err
-	}
-
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
 		"host": server.Ipv4,
@@ -153,19 +149,19 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 			ProfileSlug: newProfileSlug.(string),
 		}
 
-		_, err := client.ResizeDryRun(context.Background(), d.Id(), opts)
+		_, err := client.ResizeDryRun(ctx, d.Id(), opts)
 
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		callbackID, err := client.ResizeServer(context.Background(), d.Id(), opts)
+		callbackID, err := client.ResizeServer(ctx, d.Id(), opts)
 
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err = waitForAction(client, callbackID); err != nil {
+		if err = waitForAction(ctx, client, callbackID); err != nil {
 			return diag.Errorf("server (%s) profile change event (%s) errorred: %s", d.Id(), callbackID, err)
 		}
 	}
@@ -182,41 +178,21 @@ func resourceWebdockServerUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(err)
 		}
 
-		if err = waitForAction(client, callbackID); err != nil {
+		if err = waitForAction(ctx, client, callbackID); err != nil {
 			return diag.Errorf("server (%s) reinstall event (%s) errorred: %s", d.Id(), callbackID, err)
 		}
-	}
-
-	opts := api.PatchServerRequestBody{
-		Name: d.Get("name").(string),
 	}
 
 	if d.HasChange("name") {
 		_, newName := d.GetChange("name")
 
-		opts.Name = newName.(string)
-	}
+		opts := api.PatchServerRequestBody{
+			Name: newName.(string),
+		}
 
-	if d.HasChange("description") {
-		_, newDescription := d.GetChange("description")
-
-		opts.Description = newDescription.(string)
-	}
-
-	if d.HasChange("notes") {
-		_, newNotes := d.GetChange("notes")
-
-		opts.Notes = newNotes.(string)
-	}
-
-	if d.HasChange("next_action_date") {
-		_, newNextActionDate := d.GetChange("next_action_date")
-
-		opts.NextActionDate = newNextActionDate.(string)
-	}
-
-	if _, err := client.PatchServer(context.Background(), d.Id(), opts); err != nil {
-		return diag.FromErr(err)
+		if _, err := client.PatchServer(ctx, d.Id(), opts); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	return resourceWebdockServerRead(ctx, d, meta)
@@ -235,7 +211,7 @@ func resourceWebdockServerDelete(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	if err = waitForAction(client, callbackID); err != nil {
+	if err = waitForAction(ctx, client, callbackID); err != nil {
 		diag.Errorf("server (%s) delete event (%s) errorred: %s", d.Id(), callbackID, err)
 	}
 

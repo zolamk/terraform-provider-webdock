@@ -35,17 +35,8 @@ type ChargeSummary struct {
 
 // PatchServer model
 type PatchServerRequestBody struct {
-	// Description of the server
-	Description string `json:"description"`
-
 	// Name of the server
 	Name string `json:"name"`
-
-	// Next action of the server
-	NextActionDate string `json:"nextActionDate"`
-
-	// Internal notes or comments regarding the server
-	Notes string `json:"notes"`
 }
 
 // Reinstall Server model
@@ -92,9 +83,6 @@ type Server struct {
 	// Creation date/time
 	Date string `json:"date,omitempty" mapstructure:"created_at"`
 
-	// Server Description (what's installed here?) as entered by admin in Server Metadata
-	Description string `json:"description,omitempty" mapstructure:"description"`
-
 	// Server image
 	Image string `json:"image,omitempty" mapstructure:"image_slug"`
 
@@ -109,12 +97,6 @@ type Server struct {
 
 	// Server name
 	Name string `json:"name,omitempty" mapstructure:"name"`
-
-	// Next Action date/time as entered by admin in Server Metadata
-	NextActionDate string `json:"nextActionDate,omitempty" mapstructure:"next_action_date"`
-
-	// Notes as entered by admin in Server Metadata
-	Notes string `json:"notes,omitempty" mapstructure:"notes"`
 
 	// Server profile
 	Profile string `json:"profile" mapstructure:"profile_slug"`

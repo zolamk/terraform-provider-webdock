@@ -39,8 +39,7 @@ func (c *Config) Client() (*CombinedConfig, diag.Diagnostics) {
 	}, nil
 }
 
-// waitForAction waits for the action to finish using the resource.StateChangeConf.
-func waitForAction(client *api.Client, callbackID string) error {
+func waitForAction(ctx context.Context, client *api.Client, callbackID string) error {
 	var (
 		pending   = "waiting"
 		working   = "working"
@@ -48,8 +47,7 @@ func waitForAction(client *api.Client, callbackID string) error {
 		refreshfn = func() (result interface{}, state string, err error) {
 			opts := &api.GetEventsParams{}
 
-			events, err := client.GetEvents(context.Background(), opts)
-
+			events, err := client.GetEvents(ctx, opts)
 			if err != nil {
 				return nil, "", err
 			}

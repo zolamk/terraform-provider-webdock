@@ -108,11 +108,9 @@ func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (Events
 		return nil, fmt.Errorf("error getting events: %w", apiError)
 	}
 
-	decoder := json.NewDecoder(resp.Body)
-
 	events := Events{}
 
-	if err := decoder.Decode(&events); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&events); err != nil {
 		return nil, fmt.Errorf("error decoding get events response body: %w", err)
 	}
 
