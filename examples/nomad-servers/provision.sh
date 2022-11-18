@@ -11,6 +11,8 @@ apt update
 
 apt-get -y install nomad
 
+mkdir /data
+
 echo "
 datacenter = \"dc1\"
 data_dir  = \"/opt/nomad/data\"
@@ -26,6 +28,10 @@ server {
 
 client {
   enabled = true
+  host_volume \"data\" {
+    path = \"/data/\"
+    read_only = false
+  }
   server_join {
     retry_join = [\"$3\"]
   }
