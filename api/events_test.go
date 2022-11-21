@@ -18,7 +18,7 @@ func TestGetEvents(t *testing.T) {
 		server       *httptest.Server
 		wantErr      error
 		ctx          context.Context
-		params       *api.GetEventsParams
+		params       api.GetEventsParams
 		wantResponse api.Events
 	}{
 		"when request errors": {

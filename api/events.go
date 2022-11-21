@@ -10,17 +10,6 @@ import (
 	"github.com/google/go-querystring/query"
 )
 
-// Event log status
-type EventLogStatus string
-
-// Defines values for EventLog Status.
-const (
-	EventLogDTOStatusError    EventLogStatus = "error"
-	EventLogDTOStatusFinished EventLogStatus = "finished"
-	EventLogDTOStatusWaiting  EventLogStatus = "waiting"
-	EventLogDTOStatusWorking  EventLogStatus = "working"
-)
-
 // GetEventsParams defines parameters for GetEvents.
 type GetEventsParams struct {
 	// Callback ID
@@ -66,12 +55,12 @@ type EventLog struct {
 	StartTime string `json:"startTime,omitempty"`
 
 	// Status
-	Status EventLogStatus `json:"status,omitempty"`
+	Status string `json:"status,omitempty"`
 }
 
 type Events []EventLog
 
-func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams) (Events, error) {
+func (c *Client) GetEvents(ctx context.Context, params GetEventsParams) (Events, error) {
 	serverURL, err := url.Parse(c.Server)
 	if err != nil {
 		return nil, err

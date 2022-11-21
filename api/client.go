@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"io"
 	"net/http"
 	"strings"
 )
@@ -103,11 +102,8 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetAccountInformation returns account information of the API token
-	GetAccountInformation(ctx context.Context) (*AccountInformation, error)
-
 	// GetPublicKeys request
-	GetPublicKeys(ctx context.Context) (*PublicKeys, error)
+	GetPublicKeys(ctx context.Context) (PublicKeys, error)
 
 	CreatePublicKey(ctx context.Context, body CreatePublicKeyRequestBody) (*PublicKey, error)
 
@@ -115,43 +111,40 @@ type ClientInterface interface {
 	DeletePublicKey(ctx context.Context, id int64) error
 
 	// GetEvents request
-	GetEvents(ctx context.Context, params *GetEventsParams) (*Events, error)
+	GetEvents(ctx context.Context, params GetEventsParams) (Events, error)
 
 	// GetServersImages request
-	GetServersImages(ctx context.Context) (*ServerImages, error)
+	GetServersImages(ctx context.Context) (ServerImages, error)
 
 	// GetServersLocations request
-	GetServersLocations(ctx context.Context) (*ServerLocations, error)
+	GetServersLocations(ctx context.Context) (ServerLocations, error)
 
 	// GetServersProfiles request
-	GetServersProfiles(ctx context.Context, params *GetServersProfilesParams) (*ServerProfiles, error)
+	GetServersProfiles(ctx context.Context, params GetServersProfilesParams) (ServerProfiles, error)
 
 	// GetServers request
-	GetServers(ctx context.Context, params *GetServersParams) (*Servers, error)
+	GetServers(ctx context.Context, params GetServersParams) (Servers, error)
 
 	// CreateServer request
-	CreateServer(ctx context.Context, body CreateServerRequestBody) (string, error)
+	CreateServer(ctx context.Context, body CreateServerRequestBody) (*Server, error)
 
 	// DeleteServer request
-	DeleteServer(ctx context.Context, serverSlug string) (*string, error)
+	DeleteServer(ctx context.Context, serverSlug string) (string, error)
 
 	// GetServerBySlug request
-	GetServerBySlug(ctx context.Context, serverSlug string) (*http.Response, error)
+	GetServerBySlug(ctx context.Context, serverSlug string) (*Server, error)
 
-	// PatchServer request with any body
-	PatchServerWithBody(ctx context.Context, serverSlug string, contentType string, body io.Reader) (*http.Response, error)
+	PatchServer(ctx context.Context, serverSlug string, body PatchServerRequestBody) (*Server, error)
 
-	PatchServer(ctx context.Context, serverSlug string, body PatchServerRequestBody) (*http.Response, error)
+	ReinstallServer(ctx context.Context, serverSlug string, body ReinstallServerRequestBody) (string, error)
 
-	ReinstallServer(ctx context.Context, serverSlug string, body ReinstallServerRequestBody) (*http.Response, error)
+	ResizeServer(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (string, error)
 
-	ResizeServer(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (*http.Response, error)
+	ResizeDryRun(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (*ServerResize, error)
 
-	ResizeDryRun(ctx context.Context, serverSlug string, body ResizeServerRequestBody) (*http.Response, error)
+	GetShellUsers(ctx context.Context, serverSlug string) (ShellUsers, error)
 
-	GetShellUsers(ctx context.Context, serverSlug string) ([]ShellUser, error)
-
-	CreateShellUser(ctx context.Context, serverSlug string, shellUser *CreateShellUserRequestBody) (*ShellUser, error)
+	CreateShellUser(ctx context.Context, serverSlug string, shellUser CreateShellUserRequestBody) (*ShellUser, error)
 
 	DeleteShellUser(ctx context.Context, serverSlug string, shellUserID int64) (string, error)
 

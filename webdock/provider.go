@@ -24,7 +24,6 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"webdock_account":     datasourceWebdockAccount(),
 			"webdock_servers":     dataSourceWebdockServers(),
 			"webdock_images":      dataSourceWebdockImages(),
 			"webdock_profiles":    dataSourceWebdockProfiles(),

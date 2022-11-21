@@ -18,7 +18,7 @@ type Config struct {
 }
 
 type CombinedConfig struct {
-	client *api.Client
+	client api.ClientInterface
 }
 
 func setAuthorization(c *Config) api.RequestEditorFn {
@@ -39,13 +39,15 @@ func (c *Config) Client() (*CombinedConfig, diag.Diagnostics) {
 	}, nil
 }
 
-func waitForAction(ctx context.Context, client *api.Client, callbackID string) error {
+func waitForAction(ctx context.Context, client api.ClientInterface, callbackID string) error {
 	var (
 		pending   = "waiting"
 		working   = "working"
 		target    = "finished"
 		refreshfn = func() (result interface{}, state string, err error) {
-			opts := &api.GetEventsParams{}
+			opts := api.GetEventsParams{
+				CallbackId: callbackID,
+			}
 
 			events, err := client.GetEvents(ctx, opts)
 			if err != nil {

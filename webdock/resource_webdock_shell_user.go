@@ -44,10 +44,10 @@ func resourceWebdockShellUserRead(ctx context.Context, d *schema.ResourceData, m
 func resourceWebdockShellUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*CombinedConfig).client
 
-	var publicKeys []int
+	var publicKeys []int64
 
 	for _, key := range d.Get("public_keys").([]interface{}) {
-		publicKeys = append(publicKeys, key.(int))
+		publicKeys = append(publicKeys, key.(int64))
 	}
 
 	createShellUserBody := api.CreateShellUserRequestBody{
@@ -82,7 +82,7 @@ func resourceWebdockShellUserUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error converting id to number: %v", err)
 	}
 
-	shellUser, err := client.UpdateShellUserPublicKeys(ctx, d.Get("server_slug").(string), id, d.Get("public_keys").([]int))
+	shellUser, err := client.UpdateShellUserPublicKeys(ctx, d.Get("server_slug").(string), id, d.Get("public_keys").([]int64))
 	if err != nil {
 		return diag.Errorf("error updating shell user: %v", err)
 	}
