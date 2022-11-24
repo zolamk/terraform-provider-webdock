@@ -70,7 +70,7 @@ func waitForAction(ctx context.Context, client api.ClientInterface, callbackID s
 		Delay:      10 * time.Second,
 		Timeout:    60 * time.Minute,
 		MinTimeout: 3 * time.Second,
-	}).WaitForState()
+	}).WaitForStateContext(ctx)
 
 	return err
 }

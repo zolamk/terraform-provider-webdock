@@ -105,13 +105,13 @@ type Server struct {
 	Slug string `json:"slug,omitempty" mapstructure:"slug"`
 
 	// Last known snapshot runtime (seconds)
-	SnapshotRunTime int64 `json:"snapshotRunTime,omitempty" mapstructure:"snapshot_run_time"`
+	SnapshotRunTime int64 `json:"snapshotRunTime,omitempty" mapstructure:"snapshot_runtime"`
 
 	// Server status
 	Status string `json:"status,omitempty" mapstructure:"status"`
 
 	// Server virtualization type indicating whether it's a Webdock LXD VPS or a KVM Virtual Machine
-	Virtualization string
+	Virtualization string `json:"virtualization,omitempty" mapstructure:"virtualization"`
 
 	// Webserver type
 	WebServer string `json:"webServer,omitempty" mapstructure:"webserver"`

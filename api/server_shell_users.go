@@ -23,14 +23,14 @@ type CreateShellUserRequestBody struct {
 }
 
 type ShellUser struct {
-	ID         json.Number `json:"id,omitempty"`
-	Username   string      `json:"username,omitempty"`
-	Password   string      `json:"password,omitempty"`
-	Group      string      `json:"group,omitempty"`
-	Shell      string      `json:"shell,omitempty"`
-	PublicKeys PublicKeys  `json:"publicKeys,omitempty"`
-	Created    string      `json:"created,omitempty"`
-	CallbackID string      `json:"-"`
+	ID         json.Number `json:"id,omitempty" mapstructure:"id"`
+	Username   string      `json:"username,omitempty" mapstructure:"username"`
+	Password   string      `json:"password,omitempty" mapstructure:"password"`
+	Group      string      `json:"group,omitempty" mapstructure:"group"`
+	Shell      string      `json:"shell,omitempty" mapstructure:"shell"`
+	PublicKeys PublicKeys  `json:"publicKeys,omitempty" mapstructure:"public_keys"`
+	Created    string      `json:"created,omitempty" mapstructure:"created_at"`
+	CallbackID string      `json:"-" mapstructure:"-"`
 }
 
 type ShellUsers []ShellUser

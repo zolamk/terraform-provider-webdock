@@ -43,7 +43,6 @@ func resourceWebdockPublicKeyRead(ctx context.Context, d *schema.ResourceData, m
 	client := meta.(*CombinedConfig).client
 
 	publicKeys, err := client.GetPublicKeys(ctx)
-
 	if err != nil {
 		return diag.Errorf("error getting public key: %v", err)
 	}
