@@ -1,8 +1,7 @@
-package webdock
+package datasource_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"testing"
 
@@ -10,12 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
+	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
-func TestDataSourceWebdockPublicKeysRead(t *testing.T) {
+func TestDataSourceWebdockImages(t *testing.T) {
 	ctx := context.Background()
 	client := &mocks.ClientInterface{}
 	mockErr := errors.New("mock error")
@@ -26,22 +26,22 @@ func TestDataSourceWebdockPublicKeysRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: dataSourceWebdockPublicKeys().Data(&terraform.InstanceState{}),
+			rd: datasource.Images().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetPublicKeys", ctx, mock.Anything).Once().Return(api.PublicKeys{
-					api.PublicKey{
-						Id:      json.Number("1"),
-						Created: "02/03/2022 20:37:27",
-						Name:    "test",
-						Key:     "public key content",
+				client.On("GetServersImages", ctx).Once().Return(api.ServerImages{
+					api.ServerImage{
+						Name:       "test",
+						PhpVersion: "1.0",
+						Slug:       "test",
+						WebServer:  "test",
 					},
 				}, nil)
 			},
 		},
 		"error: ": {
-			rd: dataSourceWebdockPublicKeys().Data(&terraform.InstanceState{}),
+			rd: datasource.Images().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetPublicKeys", ctx, mock.Anything).Once().Return(nil, mockErr)
+				client.On("GetServersImages", ctx).Once().Return(nil, mockErr)
 			},
 			diags: diag.FromErr(errors.New("mock error")),
 		},
@@ -51,9 +51,7 @@ func TestDataSourceWebdockPublicKeysRead(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := dataSourceWebdockPublicKeys().ReadContext(ctx, test.rd, &CombinedConfig{
-				client: client,
-			})
+			diags := datasource.Images().ReadContext(ctx, test.rd, config.NewCombinedConfig(nil, client))
 
 			assert.Equal(t, test.diags, diags)
 		})

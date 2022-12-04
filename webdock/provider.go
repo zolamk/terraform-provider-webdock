@@ -5,6 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
+	"github.com/zolamk/terraform-provider-webdock/webdock/resource"
 )
 
 func Provider() *schema.Provider {
@@ -24,18 +27,18 @@ func Provider() *schema.Provider {
 			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"webdock_servers":     dataSourceWebdockServers(),
-			"webdock_images":      dataSourceWebdockImages(),
-			"webdock_profiles":    dataSourceWebdockProfiles(),
-			"webdock_locations":   dataSourceWebdockLocations(),
-			"webdock_public_keys": dataSourceWebdockPublicKeys(),
-			"webdock_shell_users": dataSourceWebdockShellUsers(),
+			"webdock_servers":     datasource.Servers(),
+			"webdock_images":      datasource.Images(),
+			"webdock_profiles":    datasource.Profiles(),
+			"webdock_locations":   datasource.Locations(),
+			"webdock_public_keys": datasource.PublicKeys(),
+			"webdock_shell_users": datasource.ShellUsers(),
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"webdock_server":     resourceWebdockServer(),
-			"webdock_public_key": resourceWebdockPublicKey(),
-			"webdock_shell_user": resourceWebdockShellUser(),
+			"webdock_server":     resource.Server(),
+			"webdock_public_key": resource.PublicKey(),
+			"webdock_shell_user": resource.ShellUser(),
 		},
 	}
 
@@ -53,7 +56,7 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
-	config := Config{
+	config := config.Config{
 		Token:            d.Get("token").(string),
 		APIEndpoint:      d.Get("api_endpoint").(string),
 		TerraformVersion: terraformVersion,

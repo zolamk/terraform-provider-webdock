@@ -1,4 +1,4 @@
-package webdock
+package resource
 
 import (
 	"context"
@@ -7,20 +7,22 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
 
-func resourceWebdockPublicKey() *schema.Resource {
+func PublicKey() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceWebdockPublicKeyCreate,
-		ReadContext:   resourceWebdockPublicKeyRead,
-		DeleteContext: resourceWebdockPublicKeyDelete,
+		CreateContext: createPublicKey,
+		ReadContext:   readPublicKey,
+		DeleteContext: deletePublicKey,
 		SchemaVersion: 0,
-		Schema:        publicKeySchema(),
+		Schema:        schemas.PublicKey(),
 	}
 }
 
-func resourceWebdockPublicKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func createPublicKey(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	body := api.CreatePublicKeyRequestBody{
 		Name:      d.Get("name").(string),
@@ -39,8 +41,8 @@ func resourceWebdockPublicKeyCreate(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceWebdockPublicKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readPublicKey(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	publicKeys, err := client.GetPublicKeys(ctx)
 	if err != nil {
@@ -60,8 +62,8 @@ func resourceWebdockPublicKeyRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceWebdockPublicKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func deletePublicKey(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 

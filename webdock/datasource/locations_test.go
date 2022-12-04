@@ -1,4 +1,4 @@
-package webdock
+package datasource_test
 
 import (
 	"context"
@@ -10,7 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
+	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
 func TestDataSourceWebdockLocationsRead(t *testing.T) {
@@ -24,7 +26,7 @@ func TestDataSourceWebdockLocationsRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: dataSourceWebdockLocations().Data(&terraform.InstanceState{}),
+			rd: datasource.Locations().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetServersLocations", ctx).Once().Return(api.ServerLocations{
 					api.ServerLocation{
@@ -39,7 +41,7 @@ func TestDataSourceWebdockLocationsRead(t *testing.T) {
 			},
 		},
 		"error: ": {
-			rd: dataSourceWebdockLocations().Data(&terraform.InstanceState{}),
+			rd: datasource.Locations().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetServersLocations", ctx).Once().Return(nil, mockErr)
 			},
@@ -51,9 +53,7 @@ func TestDataSourceWebdockLocationsRead(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := dataSourceWebdockLocations().ReadContext(ctx, test.rd, &CombinedConfig{
-				client: client,
-			})
+			diags := datasource.Locations().ReadContext(ctx, test.rd, config.NewCombinedConfig(nil, client))
 
 			assert.Equal(t, test.diags, diags)
 		})

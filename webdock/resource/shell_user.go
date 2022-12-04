@@ -1,4 +1,4 @@
-package webdock
+package resource
 
 import (
 	"context"
@@ -7,42 +7,24 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
+	"github.com/zolamk/terraform-provider-webdock/webdock/utils"
 )
 
-func resourceWebdockShellUser() *schema.Resource {
+func ShellUser() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: resourceWebdockShellUserCreate,
-		UpdateContext: resourceWebdockShellUserUpdate,
-		DeleteContext: resourceWebdockShellUserDelete,
-		ReadContext:   resourceWebdockShellUserRead,
+		CreateContext: createShellUser,
+		UpdateContext: updateShellUser,
+		DeleteContext: deleteShellUser,
+		ReadContext:   readShellUser,
 		SchemaVersion: 0,
-		Schema:        shellUserSchema(),
+		Schema:        schemas.ShellUser(),
 	}
 }
 
-func resourceWebdockShellUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
-
-	shellUsers, err := client.GetShellUsers(ctx, d.Get("server_slug").(string))
-	if err != nil {
-		return diag.Errorf("error getting shell users: %v", err)
-	}
-
-	shellUser := findShellUserByID(d.Id(), shellUsers)
-
-	if shellUser == nil {
-		return diag.Errorf("error getting public key: 404 Not Found")
-	}
-
-	if err = setShellUserAttributes(d, shellUser); err != nil {
-		return diag.Errorf("error setting public key: %v", err)
-	}
-
-	return nil
-}
-
-func resourceWebdockShellUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func createShellUser(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	var publicKeys []int64
 
@@ -63,7 +45,7 @@ func resourceWebdockShellUserCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	if err := waitForAction(ctx, client, shellUser.CallbackID); err != nil {
+	if err := utils.WaitForAction(ctx, client, shellUser.CallbackID); err != nil {
 		return diag.Errorf("error creating shell user: %s", err)
 	}
 
@@ -74,8 +56,29 @@ func resourceWebdockShellUserCreate(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceWebdockShellUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readShellUser(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
+
+	shellUsers, err := client.GetShellUsers(ctx, d.Get("server_slug").(string))
+	if err != nil {
+		return diag.Errorf("error getting shell users: %v", err)
+	}
+
+	shellUser := findShellUserByID(d.Id(), shellUsers)
+
+	if shellUser == nil {
+		return diag.Errorf("error getting public key: 404 Not Found")
+	}
+
+	if err = setShellUserAttributes(d, shellUser); err != nil {
+		return diag.Errorf("error setting public key: %v", err)
+	}
+
+	return nil
+}
+
+func updateShellUser(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -87,7 +90,7 @@ func resourceWebdockShellUserUpdate(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error updating shell user: %v", err)
 	}
 
-	if err := waitForAction(ctx, client, shellUser.CallbackID); err != nil {
+	if err := utils.WaitForAction(ctx, client, shellUser.CallbackID); err != nil {
 		return diag.Errorf("error updating shell user: %v", err)
 	}
 
@@ -98,8 +101,8 @@ func resourceWebdockShellUserUpdate(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceWebdockShellUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func deleteShellUser(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	id, err := strconv.ParseInt(d.Id(), 10, 64)
 	if err != nil {
@@ -111,8 +114,22 @@ func resourceWebdockShellUserDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("error deleting shell user: %v", err)
 	}
 
-	if err = waitForAction(ctx, client, callbackID); err != nil {
+	if err = utils.WaitForAction(ctx, client, callbackID); err != nil {
 		return diag.Errorf("Error deleting shell user (%s): %v", d.Id(), err)
+	}
+
+	return nil
+}
+
+func findShellUserByID(id string, shellUsers api.ShellUsers) *api.ShellUser {
+	if shellUsers == nil {
+		return nil
+	}
+
+	for _, shellUser := range shellUsers {
+		if shellUser.ID.String() == id {
+			return &shellUser
+		}
 	}
 
 	return nil
@@ -135,20 +152,6 @@ func setShellUserAttributes(d *schema.ResourceData, shellUser *api.ShellUser) er
 
 	if err := d.Set("created_at", shellUser.Created); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func findShellUserByID(id string, shellUsers api.ShellUsers) *api.ShellUser {
-	if shellUsers == nil {
-		return nil
-	}
-
-	for _, shellUser := range shellUsers {
-		if shellUser.ID.String() == id {
-			return &shellUser
-		}
 	}
 
 	return nil

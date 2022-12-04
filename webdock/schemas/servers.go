@@ -1,10 +1,10 @@
-package webdock
+package schemas
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func serverSchema() map[string]*schema.Schema {
+func Server() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"aliases": {
 			Type:        schema.TypeList,

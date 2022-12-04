@@ -15,10 +15,6 @@ server {
   }
 }
 
-acl {
-  enabled = true
-}
-
 telemetry {
   collection_interval = "15s"
   prometheus_metrics = true

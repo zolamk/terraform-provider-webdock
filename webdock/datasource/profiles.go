@@ -1,4 +1,4 @@
-package webdock
+package datasource
 
 import (
 	"context"
@@ -7,9 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
 
-func dataSourceWebdockProfiles() *schema.Resource {
+func Profiles() *schema.Resource {
 	datasourceSchema := map[string]*schema.Schema{
 		"location_id": {
 			Type:         schema.TypeString,
@@ -20,19 +22,19 @@ func dataSourceWebdockProfiles() *schema.Resource {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: profileSchema(),
+				Schema: schemas.Profile(),
 			},
 		},
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceWebdockProfilesRead,
+		ReadContext: readProfiles,
 		Schema:      datasourceSchema,
 	}
 }
 
-func dataSourceWebdockProfilesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readProfiles(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	opts := api.GetServersProfilesParams{
 		LocationId: d.Get("location_id").(string),

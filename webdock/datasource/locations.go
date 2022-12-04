@@ -1,31 +1,33 @@
-package webdock
+package datasource
 
 import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
 
-func dataSourceWebdockLocations() *schema.Resource {
+func Locations() *schema.Resource {
 	datasourceSchema := map[string]*schema.Schema{
 		"locations": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: locationSchema(),
+				Schema: schemas.Location(),
 			},
 		},
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceWebdockLocationsRead,
+		ReadContext: readLocations,
 		Schema:      datasourceSchema,
 	}
 }
 
-func dataSourceWebdockLocationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readLocations(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	locations, err := client.GetServersLocations(ctx)
 

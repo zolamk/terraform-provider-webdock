@@ -1,4 +1,4 @@
-package webdock
+package datasource_test
 
 import (
 	"context"
@@ -11,7 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
+	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
 func TestDataSourceWebdockServersRead(t *testing.T) {
@@ -25,7 +27,7 @@ func TestDataSourceWebdockServersRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: dataSourceWebdockServers().Data(&terraform.InstanceState{}),
+			rd: datasource.Servers().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetServers", ctx, mock.Anything).Once().Return(api.Servers{
 					api.Server{
@@ -49,7 +51,7 @@ func TestDataSourceWebdockServersRead(t *testing.T) {
 			},
 		},
 		"error: ": {
-			rd: dataSourceWebdockServers().Data(&terraform.InstanceState{}),
+			rd: datasource.Servers().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetServers", ctx, mock.Anything).Once().Return(nil, mockErr)
 			},
@@ -61,9 +63,7 @@ func TestDataSourceWebdockServersRead(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := dataSourceWebdockServers().ReadContext(ctx, test.rd, &CombinedConfig{
-				client: client,
-			})
+			diags := datasource.Servers().ReadContext(ctx, test.rd, config.NewCombinedConfig(nil, client))
 
 			assert.Equal(t, test.diags, diags)
 		})

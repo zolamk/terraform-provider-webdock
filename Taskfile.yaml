@@ -5,5 +5,3 @@ tasks:
     cmds:
     - mkdir -p ~/.terraform.d/plugins/github.com/zolamk/webdock/0.1.0/linux_amd64/
     - go build -o ~/.terraform.d/plugins/github.com/zolamk/webdock/0.1.0/linux_amd64/
-    - rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
-    - terraform init

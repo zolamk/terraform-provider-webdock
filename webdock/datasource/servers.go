@@ -1,4 +1,4 @@
-package webdock
+package datasource
 
 import (
 	"context"
@@ -6,9 +6,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
 
-func dataSourceWebdockServers() *schema.Resource {
+func Servers() *schema.Resource {
 	datasourceSchema := map[string]*schema.Schema{
 		"status": {
 			Type:        schema.TypeString,
@@ -20,19 +22,19 @@ func dataSourceWebdockServers() *schema.Resource {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: serverSchema(),
+				Schema: schemas.Server(),
 			},
 		},
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceWebdockServersRead,
+		ReadContext: readServers,
 		Schema:      datasourceSchema,
 	}
 }
 
-func dataSourceWebdockServersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readServers(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	opts := api.GetServersParams{
 		Status: d.Get("status").(string),

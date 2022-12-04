@@ -15,8 +15,6 @@ provider "webdock" {
   token = "${var.token}"
 }
 
-data "webdock_account" "account" {}
-
 data "webdock_images" "images" {}
 
 data "webdock_locations" "locations" {}

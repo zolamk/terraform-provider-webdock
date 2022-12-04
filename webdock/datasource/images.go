@@ -1,13 +1,15 @@
-package webdock
+package datasource
 
 import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
 
-func dataSourceWebdockImages() *schema.Resource {
+func Images() *schema.Resource {
 	datasourceSchema := map[string]*schema.Schema{
 		"images": {
 			Type:     schema.TypeList,
@@ -15,19 +17,19 @@ func dataSourceWebdockImages() *schema.Resource {
 			Optional: false,
 			Required: false,
 			Elem: &schema.Resource{
-				Schema: imageSchema(),
+				Schema: schemas.Image(),
 			},
 		},
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceWebdockImagesRead,
+		ReadContext: readImages,
 		Schema:      datasourceSchema,
 	}
 }
 
-func dataSourceWebdockImagesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readImages(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	images, err := client.GetServersImages(ctx)
 

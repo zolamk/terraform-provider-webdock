@@ -1,4 +1,4 @@
-package webdock
+package datasource
 
 import (
 	"context"
@@ -6,9 +6,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
 
-func dataSourceWebdockShellUsers() *schema.Resource {
+func ShellUsers() *schema.Resource {
 	datasourceSchema := map[string]*schema.Schema{
 		"server_slug": {
 			Type:         schema.TypeString,
@@ -19,19 +21,19 @@ func dataSourceWebdockShellUsers() *schema.Resource {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: shellUserSchema(),
+				Schema: schemas.ShellUser(),
 			},
 		},
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceWebdockShellUsersRead,
+		ReadContext: readShellUsers,
 		Schema:      datasourceSchema,
 	}
 }
 
-func dataSourceWebdockShellUsersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readShellUsers(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	shellUsers, err := client.GetShellUsers(ctx, d.Get("server_slug").(string))
 	if err != nil {

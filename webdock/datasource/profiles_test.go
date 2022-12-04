@@ -1,4 +1,4 @@
-package webdock
+package datasource_test
 
 import (
 	"context"
@@ -11,7 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
+	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
 func TestDataSourceWebdockProfilesRead(t *testing.T) {
@@ -25,7 +27,7 @@ func TestDataSourceWebdockProfilesRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: dataSourceWebdockProfiles().Data(&terraform.InstanceState{}),
+			rd: datasource.Profiles().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetServersProfiles", ctx, mock.Anything).Once().Return(api.ServerProfiles{
 					api.ServerProfile{
@@ -46,7 +48,7 @@ func TestDataSourceWebdockProfilesRead(t *testing.T) {
 			},
 		},
 		"error: ": {
-			rd: dataSourceWebdockProfiles().Data(&terraform.InstanceState{}),
+			rd: datasource.Profiles().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetServersProfiles", ctx, mock.Anything).Once().Return(nil, mockErr)
 			},
@@ -58,9 +60,7 @@ func TestDataSourceWebdockProfilesRead(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := dataSourceWebdockProfiles().ReadContext(ctx, test.rd, &CombinedConfig{
-				client: client,
-			})
+			diags := datasource.Profiles().ReadContext(ctx, test.rd, config.NewCombinedConfig(nil, client))
 
 			assert.Equal(t, test.diags, diags)
 		})

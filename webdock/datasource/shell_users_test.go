@@ -1,4 +1,4 @@
-package webdock
+package datasource_test
 
 import (
 	"context"
@@ -12,7 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/zolamk/terraform-provider-webdock/api"
+	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
+	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
 func TestDataSourceWebdockShellUsersRead(t *testing.T) {
@@ -26,7 +28,7 @@ func TestDataSourceWebdockShellUsersRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: dataSourceWebdockShellUsers().Data(&terraform.InstanceState{}),
+			rd: datasource.ShellUsers().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetShellUsers", ctx, mock.Anything).Once().Return(api.ShellUsers{
 					api.ShellUser{
@@ -42,7 +44,7 @@ func TestDataSourceWebdockShellUsersRead(t *testing.T) {
 			},
 		},
 		"error: ": {
-			rd: dataSourceWebdockShellUsers().Data(&terraform.InstanceState{}),
+			rd: datasource.ShellUsers().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("GetShellUsers", ctx, mock.Anything).Once().Return(nil, mockErr)
 			},
@@ -54,9 +56,7 @@ func TestDataSourceWebdockShellUsersRead(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := dataSourceWebdockShellUsers().ReadContext(ctx, test.rd, &CombinedConfig{
-				client: client,
-			})
+			diags := datasource.ShellUsers().ReadContext(ctx, test.rd, config.NewCombinedConfig(nil, client))
 
 			assert.Equal(t, test.diags, diags)
 		})

@@ -1,10 +1,10 @@
-package webdock
+package schemas
 
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func profileSchema() map[string]*schema.Schema {
+func Profile() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"slug": {
 			Type:        schema.TypeString,

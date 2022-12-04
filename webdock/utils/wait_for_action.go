@@ -1,45 +1,15 @@
-package webdock
+package utils
 
 import (
 	"context"
 	"errors"
-	"net/http"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/zolamk/terraform-provider-webdock/api"
 )
 
-type Config struct {
-	Token            string
-	APIEndpoint      string
-	TerraformVersion string
-}
-
-type CombinedConfig struct {
-	client api.ClientInterface
-}
-
-func setAuthorization(c *Config) api.RequestEditorFn {
-	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Add("Authorization", "Bearer "+c.Token)
-		return nil
-	}
-}
-
-func (c *Config) Client() (*CombinedConfig, diag.Diagnostics) {
-	webdockClient, err := api.NewClient(c.APIEndpoint+"/v1", api.WithRequestEditorFn(setAuthorization(c)))
-	if err != nil {
-		return nil, diag.Errorf("error creating api client: %v", err)
-	}
-
-	return &CombinedConfig{
-		client: webdockClient,
-	}, nil
-}
-
-func waitForAction(ctx context.Context, client api.ClientInterface, callbackID string) error {
+func WaitForAction(ctx context.Context, client api.ClientInterface, callbackID string) error {
 	var (
 		pending   = "waiting"
 		working   = "working"
@@ -60,7 +30,7 @@ func waitForAction(ctx context.Context, client api.ClientInterface, callbackID s
 
 			event := (events)[0]
 
-			return event, string(event.Status), nil
+			return event, event.Status, nil
 		}
 	)
 	_, err := (&resource.StateChangeConf{

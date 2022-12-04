@@ -1,31 +1,33 @@
-package webdock
+package datasource
 
 import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/zolamk/terraform-provider-webdock/config"
+	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
 
-func dataSourceWebdockPublicKeys() *schema.Resource {
+func PublicKeys() *schema.Resource {
 	datasourceSchema := map[string]*schema.Schema{
 		"public_keys": {
 			Type:     schema.TypeList,
 			Computed: true,
 			Elem: &schema.Resource{
-				Schema: publicKeySchema(),
+				Schema: schemas.PublicKey(),
 			},
 		},
 	}
 
 	return &schema.Resource{
-		ReadContext: dataSourceWebdockPublicKeysRead,
+		ReadContext: readPublicKeys,
 		Schema:      datasourceSchema,
 	}
 }
 
-func dataSourceWebdockPublicKeysRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*CombinedConfig).client
+func readPublicKeys(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*config.CombinedConfig)
 
 	publicKeys, err := client.GetPublicKeys(ctx)
 
