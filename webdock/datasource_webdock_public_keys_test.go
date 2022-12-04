@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/zolamk/terraform-provider-webdock/api"
-	"github.com/zolamk/terraform-provider-webdock/mocks"
+	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 )
 
 func TestDataSourceWebdockPublicKeysRead(t *testing.T) {

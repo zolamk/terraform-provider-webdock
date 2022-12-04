@@ -50,7 +50,7 @@ func resourceWebdockPublicKeyRead(ctx context.Context, d *schema.ResourceData, m
 	publicKey := findPublicKeyById(d.Id(), publicKeys)
 
 	if publicKey == nil {
-		return diag.Errorf("error getting public key: 404 Not Found")
+		return diag.Errorf("error getting public key: not found")
 	}
 
 	if err = setPublicKeyAttributes(d, publicKey); err != nil {

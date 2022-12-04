@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/zolamk/terraform-provider-webdock/api"
-	"github.com/zolamk/terraform-provider-webdock/mocks"
+	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 )
 
 func TestDataSourceWebdockImages(t *testing.T) {
