@@ -9,6 +9,7 @@ terraform.tfstate
 terraform.tfstate.backup
 .terraform.lock.hcl
 .terraform/
+.vscode
 
 # Test binary, built with `go test -c`
 *.test
