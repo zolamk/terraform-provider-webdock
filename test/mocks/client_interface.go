@@ -413,11 +413,11 @@ func (_m *ClientInterface) ResizeServer(ctx context.Context, serverSlug string, 
 }
 
 // UpdateShellUserPublicKeys provides a mock function with given fields: ctx, serverSlug, shellUserID, publicKeys
-func (_m *ClientInterface) UpdateShellUserPublicKeys(ctx context.Context, serverSlug string, shellUserID int64, publicKeys []int64) (*api.ShellUser, error) {
+func (_m *ClientInterface) UpdateShellUserPublicKeys(ctx context.Context, serverSlug string, shellUserID int64, publicKeys []int) (*api.ShellUser, error) {
 	ret := _m.Called(ctx, serverSlug, shellUserID, publicKeys)
 
 	var r0 *api.ShellUser
-	if rf, ok := ret.Get(0).(func(context.Context, string, int64, []int64) *api.ShellUser); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, int64, []int) *api.ShellUser); ok {
 		r0 = rf(ctx, serverSlug, shellUserID, publicKeys)
 	} else {
 		if ret.Get(0) != nil {
@@ -426,7 +426,7 @@ func (_m *ClientInterface) UpdateShellUserPublicKeys(ctx context.Context, server
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, int64, []int64) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string, int64, []int) error); ok {
 		r1 = rf(ctx, serverSlug, shellUserID, publicKeys)
 	} else {
 		r1 = ret.Error(1)

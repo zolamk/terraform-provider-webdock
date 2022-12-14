@@ -214,7 +214,7 @@ func TestCreateShellUser(t *testing.T) {
 				Password:   "password",
 				Group:      "sudo",
 				Shell:      "/bin/bash",
-				PublicKeys: []int64{10},
+				PublicKeys: []int{10},
 			},
 			wantResponse: &api.ShellUser{
 				Username: "xula",
@@ -317,7 +317,7 @@ func TestUpdateShellUserPublicKeys(t *testing.T) {
 		ctx          context.Context
 		serverSlug   string
 		shellUserID  int64
-		publicKeys   []int64
+		publicKeys   []int
 		wantResponse *api.ShellUser
 	}{
 		"when request errors": {

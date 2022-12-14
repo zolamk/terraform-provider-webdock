@@ -15,11 +15,11 @@ const (
 )
 
 type CreateShellUserRequestBody struct {
-	Username   string  `json:"username,omitempty"`
-	Password   string  `json:"password,omitempty"`
-	Group      string  `json:"group,omitempty"`
-	Shell      string  `json:"shell,omitempty"`
-	PublicKeys []int64 `json:"publicKeys,omitempty"`
+	Username   string `json:"username,omitempty"`
+	Password   string `json:"password,omitempty"`
+	Group      string `json:"group,omitempty"`
+	Shell      string `json:"shell,omitempty"`
+	PublicKeys []int  `json:"publicKeys,omitempty"`
 }
 
 type ShellUser struct {
@@ -157,7 +157,7 @@ func (c *Client) DeleteShellUser(ctx context.Context, serverSlug string, shellUs
 	return res.Header.Get("X-Callback-ID"), nil
 }
 
-func (c *Client) UpdateShellUserPublicKeys(ctx context.Context, serverSlug string, shellUserID int64, publicKeys []int64) (*ShellUser, error) {
+func (c *Client) UpdateShellUserPublicKeys(ctx context.Context, serverSlug string, shellUserID int64, publicKeys []int) (*ShellUser, error) {
 	var bodyReader io.Reader
 
 	shellUserBody := &CreateShellUserRequestBody{

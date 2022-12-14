@@ -148,5 +148,5 @@ type ClientInterface interface {
 
 	DeleteShellUser(ctx context.Context, serverSlug string, shellUserID int64) (string, error)
 
-	UpdateShellUserPublicKeys(ctx context.Context, serverSlug string, shellUserID int64, publicKeys []int64) (*ShellUser, error)
+	UpdateShellUserPublicKeys(ctx context.Context, serverSlug string, shellUserID int64, publicKeys []int) (*ShellUser, error)
 }

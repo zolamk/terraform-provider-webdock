@@ -26,10 +26,10 @@ func ShellUser() *schema.Resource {
 func createShellUser(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.CombinedConfig)
 
-	var publicKeys []int64
+	var publicKeys []int
 
 	for _, key := range d.Get("public_keys").([]interface{}) {
-		publicKeys = append(publicKeys, key.(int64))
+		publicKeys = append(publicKeys, key.(int))
 	}
 
 	createShellUserBody := api.CreateShellUserRequestBody{
@@ -85,7 +85,7 @@ func updateShellUser(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.Errorf("error converting id to number: %v", err)
 	}
 
-	shellUser, err := client.UpdateShellUserPublicKeys(ctx, d.Get("server_slug").(string), id, d.Get("public_keys").([]int64))
+	shellUser, err := client.UpdateShellUserPublicKeys(ctx, d.Get("server_slug").(string), id, d.Get("public_keys").([]int))
 	if err != nil {
 		return diag.Errorf("error updating shell user: %v", err)
 	}
