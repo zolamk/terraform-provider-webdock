@@ -38,7 +38,7 @@ func WaitForAction(ctx context.Context, client api.ClientInterface, callbackID s
 		Refresh:    refreshfn,
 		Target:     []string{target},
 		Delay:      10 * time.Second,
-		Timeout:    60 * time.Minute,
+		Timeout:    10 * time.Minute,
 		MinTimeout: 3 * time.Second,
 	}).WaitForStateContext(ctx)
 
