@@ -384,7 +384,7 @@ func TestUpdateShellUserPublicKeys(t *testing.T) {
 				})
 			})),
 			ctx:        context.Background(),
-			publicKeys: []int64{15},
+			publicKeys: []int{15},
 			wantResponse: &api.ShellUser{
 				Username: "xula",
 				Group:    "sudo",
