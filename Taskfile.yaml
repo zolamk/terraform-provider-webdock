@@ -3,5 +3,6 @@ version: '3'
 tasks:
   clean:
     cmds:
-    - mkdir -p ~/.terraform.d/plugins/github.com/zolamk/webdock/0.1.0/linux_amd64/
-    - go build -o ~/.terraform.d/plugins/github.com/zolamk/webdock/0.1.0/linux_amd64/
+    - mkdir -p ~/.terraform.d/plugins/github.com/zolamk/webdock/0.1.0/darwin_arm64/
+    - go build -o ~/.terraform.d/plugins/github.com/zolamk/webdock/0.1.0/darwin_arm64/
+    - rm -rf ./examples/**/.terraform.lock.hcl ./examples/**/.terraform ./examples/**/.terraform.tfstate.lock.info ./examples/**/terraform.tfstate
