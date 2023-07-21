@@ -3,7 +3,6 @@ package resource
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,10 +24,6 @@ func Server() *schema.Resource {
 }
 
 func createServer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	// There is a bug in webdocks api that causes it to act weird when
-	// server creating requests come in rapid succession
-	time.Sleep(time.Second)
-
 	client := meta.(*config.CombinedConfig)
 
 	opts := api.CreateServerRequestBody{
