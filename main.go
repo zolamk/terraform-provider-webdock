@@ -5,6 +5,8 @@ import (
 	"github.com/zolamk/terraform-provider-webdock/webdock"
 )
 
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
 func main() {
 	plugin.Serve(&plugin.ServeOpts{
 		ProviderFunc: webdock.Provider,
