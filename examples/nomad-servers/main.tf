@@ -147,10 +147,8 @@ resource "webdock_shell_user" "nomad_client_user" {
 
   provisioner "file" {
     content = templatefile("./nomad-client.hcl", {
-      ip = webdock_server.nomad_server[count.index].ipv4,
+      ip = webdock_server.nomad_client[count.index].ipv4,
       first_nomad_server_ip = webdock_server.nomad_server[0].ipv4,
-      number_of_servers = var.nomad_server_instance_count,
-      gossip_encryption_key = random_string.gossip_encryption_key.result
     })
     destination = "/tmp/nomad.hcl"
   }
