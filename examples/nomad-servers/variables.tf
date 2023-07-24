@@ -5,7 +5,7 @@ variable "token" {
 
 variable "nomad_server_instance_count" {
   type = number
-  default = 1
+  default = 2
   description = "The number of nomad servers to deploy"
 }
 
