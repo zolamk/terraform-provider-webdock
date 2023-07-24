@@ -2,7 +2,7 @@ terraform {
   required_providers {
     webdock = {
       version = "0.1.0"
-      source = "github.com/zolamk/webdock"
+      source = "zolamk/webdock"
     }
     random = {
       source = "hashicorp/random"
@@ -56,7 +56,7 @@ resource "webdock_shell_user" "nomad_server_user" {
   connection {
     type = "ssh"
     user = "user"
-    password = random_string.nomad_server_user_password.result
+    private_key = "${var.private_key}"
     host = webdock_server.nomad_server[count.index].ipv4
   }
 
