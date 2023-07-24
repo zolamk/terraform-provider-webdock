@@ -104,7 +104,7 @@ resource "webdock_shell_user" "nomad_server_user" {
 # Nomad Clients
 
 resource "webdock_server" "nomad_client" {
-  count = var.nomad_server_instance_count
+  count = var.nomad_client_instance_count
   name = "Nomad Client ${count.index + 1}"
   image_slug = "webdock-ubuntu-jammy-cloud"
   profile_slug = "webdockbitmore-2022"
