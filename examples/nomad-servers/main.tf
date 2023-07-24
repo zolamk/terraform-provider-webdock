@@ -95,7 +95,7 @@ resource "webdock_shell_user" "nomad_server_user" {
     inline = [
       "echo ${random_uuid.nomad_bootstrap_token.result} > /tmp/root.token",
       "chmod +x /tmp/provision.sh",
-      "echo ${random_string.nomad_server_user_password[count.index].result} | sudo -k -S /tmp/provision.sh ${webdock_server.nomad_server[0].ipv4} ${webdock_server.nomad_server[count.index].ipv4}",
+      "echo ${random_string.nomad_server_user_password[count.index].result} | sudo -k -S /tmp/provision.sh server ${webdock_server.nomad_server[0].ipv4} ${webdock_server.nomad_server[count.index].ipv4}",
       "rm /tmp/root.token /tmp/provision.sh /tmp/nomad.hcl"
     ]
   }
@@ -141,7 +141,7 @@ resource "webdock_shell_user" "nomad_client_user" {
   }
 
   provisioner "file" {
-    source = "./provision-client.sh"
+    source = "./provision.sh"
     destination = "/tmp/provision.sh"
   }
 
@@ -158,7 +158,7 @@ resource "webdock_shell_user" "nomad_client_user" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/provision.sh",
-      "echo ${random_string.nomad_client_user_password[count.index].result} | sudo -k -S /tmp/provision.sh",
+      "echo ${random_string.nomad_client_user_password[count.index].result} | sudo -k -S /tmp/provision.sh client",
       "rm /tmp/provision.sh /tmp/nomad.hcl"
     ]
   }

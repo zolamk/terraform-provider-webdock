@@ -38,11 +38,11 @@ systemctl enable nomad.service
 
 service nomad start
 
-# wait for nomad to start
+# if this is the first server, bootstrap the acl
+if [ "$3" = "$3" ] && [ "$1" = "server" ]; then
 
+# wait for nomad to start
 curl --retry 5 --retry-connrefused --retry-delay 5 http://127.0.0.1:4646/v1/status/leader
 
-# if this is the first server, bootstrap the acl
-if [ "$1" = "$2" ]; then
 nomad acl bootstrap /tmp/root.token
 fi
