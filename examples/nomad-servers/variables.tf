@@ -12,3 +12,8 @@ variable "private_key" {
   type = string
   description = "the private key to use for ssh connections. used by the provisioner to install and setup the nomad server"
 }
+
+variable "nomad_client_instance_count" {
+  type = number
+  description = "The number of nomad clients to deploy"
+}
