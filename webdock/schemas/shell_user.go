@@ -26,6 +26,7 @@ func ShellUser() map[string]*schema.Schema {
 			Type:        schema.TypeString,
 			Required:    true,
 			ForceNew:    true,
+			Sensitive:   true,
 			Description: "shell user password",
 		},
 		"group": {

@@ -1,6 +1,14 @@
 version: '3'
 
 tasks:
+  build:
+    deps:
+      - test
+    cmds:
+      - go build
+  test:
+    cmds:
+    - go test -v ./...
   clean:
     cmds:
     - mkdir -p ~/.terraform.d/plugins/github.com/zolamk/webdock/0.1.0/darwin_arm64/
