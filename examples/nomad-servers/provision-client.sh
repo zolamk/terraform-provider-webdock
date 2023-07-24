@@ -27,7 +27,7 @@ ufw --force enable
 
 # copy nomad configuration
 
-cp /tmp/nomad-client.hcl /etc/nomad.d/nomad.hcl
+cp /tmp/nomad.hcl /etc/nomad.d/nomad.hcl
 
 # enable and start nomad service
 
