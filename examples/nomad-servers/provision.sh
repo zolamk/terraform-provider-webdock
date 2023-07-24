@@ -26,11 +26,12 @@ ufw allow ssh
 ufw --force enable
 
 # copy nomad configuration
-
 cp /tmp/nomad.hcl /etc/nomad.d/nomad.hcl
 
+if [ "$1" = "server" ]; then
 # run nomad with non privileged user
 sed -i 's/\[Service\]/\[Service\]\nUser=nomad\nGroup=nomad/' /lib/systemd/system/nomad.service
+fi
 
 # enable and start nomad service
 
@@ -40,7 +41,6 @@ service nomad start
 
 # if this is the first server, bootstrap the acl
 if [ "$3" = "$3" ] && [ "$1" = "server" ]; then
-
 # wait for nomad to start
 curl --retry 5 --retry-connrefused --retry-delay 5 http://127.0.0.1:4646/v1/status/leader
 
