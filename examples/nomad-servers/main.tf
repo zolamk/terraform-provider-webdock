@@ -25,17 +25,12 @@ data "webdock_profiles" "profiles" {
 
 data "webdock_public_keys" "public_keys" {}
 
-resource "random_string" "nomad_server_user_password" {
-  length = 16
-  special = false
-  min_lower = 4
-  min_upper = 4
-  min_numeric = 8
-}
-
 resource "random_string" "gossip_encryption_key" {
   length = 32
   special = false
+}
+
+resource "random_uuid" "nomad_bootstrap_token" {
 }
 
 resource "webdock_server" "nomad_server" {
@@ -46,10 +41,31 @@ resource "webdock_server" "nomad_server" {
   location_id = "fi"
 }
 
+resource "random_string" "nomad_server_user_password" {
+  count = var.nomad_server_instance_count
+  length = 16
+  special = false
+  min_lower = 4
+  min_upper = 4
+  min_numeric = 8
+}
+
+output "nomad_server_user_passwords" {
+  value = random_string.nomad_server_user_password[*].result
+  description = "nomad server user password"
+  sensitive = true
+}
+
+output "nomad_server_bootstrap_token" {
+  value = random_uuid.nomad_bootstrap_token.result
+  description = "the nomad server bootstrap token"
+  sensitive = true
+}
+
 resource "webdock_shell_user" "nomad_server_user" {
   count = var.nomad_server_instance_count
   username = "user"
-  password = random_string.nomad_server_user_password.result
+  password = random_string.nomad_server_user_password[count.index].result
   server_slug = webdock_server.nomad_server[count.index].slug
   public_keys = [ data.webdock_public_keys.public_keys.public_keys[0].id ]
 
@@ -77,8 +93,10 @@ resource "webdock_shell_user" "nomad_server_user" {
 
   provisioner "remote-exec" {
     inline = [
+      "echo ${random_uuid.nomad_bootstrap_token.result} > /tmp/root.token",
       "chmod +x /tmp/provision.sh",
-      "echo ${random_string.nomad_server_user_password.result} | sudo -k -S /tmp/provision.sh"
+      "echo ${random_string.nomad_server_user_password[count.index].result} | sudo -k -S /tmp/provision.sh ${webdock_server.nomad_server[0].ipv4} ${webdock_server.nomad_server[count.index].ipv4}",
+      "rm /tmp/root.token /tmp/provision.sh /tmp/nomad.hcl"
     ]
   }
 }
