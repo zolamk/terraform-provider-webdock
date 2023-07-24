@@ -42,7 +42,7 @@ resource "webdock_server" "nomad_server" {
   count = var.nomad_server_instance_count
   name = "Nomad Server ${count.index + 1}"
   image_slug = "webdock-ubuntu-jammy-cloud"
-  profile_slug = "webdockbit-2022"
+  profile_slug = "webdockbitmore-2022"
   location_id = "fi"
 }
 
