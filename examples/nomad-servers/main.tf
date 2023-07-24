@@ -121,7 +121,7 @@ resource "random_string" "nomad_client_user_password" {
 }
 
 output "nomad_client_user_passwords" {
-  value = random_string.nomad_server_user_password[*].result
+  value = random_string.nomad_client_user_password[*].result
   description = "nomad client user password"
   sensitive = true
 }
