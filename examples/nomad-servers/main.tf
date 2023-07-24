@@ -158,7 +158,7 @@ resource "webdock_shell_user" "nomad_client_user" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/provision.sh",
-      "echo ${random_string.nomad_server_user_password[count.index].result} | sudo -k -S /tmp/provision.sh",
+      "echo ${random_string.nomad_client_user_password[count.index].result} | sudo -k -S /tmp/provision.sh",
       "rm /tmp/provision.sh /tmp/nomad.hcl"
     ]
   }
