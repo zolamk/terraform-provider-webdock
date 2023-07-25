@@ -46,3 +46,15 @@ curl --retry 5 --retry-connrefused --retry-delay 5 http://127.0.0.1:4646/v1/stat
 
 nomad acl bootstrap /tmp/root.token
 fi
+
+if [ "$1" = "client" ]; then
+apt-get -y install podman unzip
+
+curl https://releases.hashicorp.com/nomad-driver-podman/0.5.0/nomad-driver-podman_0.5.0_linux_amd64.zip --output /tmp/nomad-driver-podman_0.5.0_linux_amd64.zip
+
+mkdir -p /opt/nomad/data/plugins
+
+unzip /tmp/nomad-driver-podman_0.5.0_linux_amd64.zip -d /opt/nomad/data/plugins/
+
+service nomad restart
+fi
