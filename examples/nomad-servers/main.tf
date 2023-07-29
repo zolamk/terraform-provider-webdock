@@ -8,6 +8,11 @@ terraform {
       source = "hashicorp/random"
       version = "3.4.3"
     }
+
+    nomad = {
+      source = "hashicorp/nomad"
+      version = "2.0.0-beta.1"
+    }
   }
 }
 
@@ -159,5 +164,21 @@ resource "webdock_shell_user" "nomad_client_user" {
       "echo ${random_string.nomad_client_user_password[count.index].result} | sudo -k -S /tmp/provision.sh client",
       "rm /tmp/provision.sh /tmp/nomad.hcl"
     ]
+  }
+}
+
+# setup prometheus
+provider "nomad" {
+  address = "http://${webdock_server.nomad_server[0].ipv4}:4646"
+  secret_id = output.nomad_server_bootstrap_token
+}
+
+resource "nomad_job" "monitoring" {
+  jobspec = file("./prometheus.job.hcl")
+  hcl2 {
+    allow_fs = true
+    vars = {
+      "prometheus" = var.prometheus
+    }
   }
 }

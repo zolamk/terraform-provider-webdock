@@ -17,3 +17,12 @@ variable "nomad_client_instance_count" {
   type = number
   description = "The number of nomad clients to deploy"
 }
+
+variable "prometheus" {
+  type = object({
+    url = "string"
+    username = "string"
+    password = "string"
+  })
+  description = "The prometheus server configuration"
+}
