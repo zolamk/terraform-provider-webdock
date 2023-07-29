@@ -1,14 +1,6 @@
 job "prometheus" {
   type        = "service"
 
-  variable "prometheus" {
-    type = object({
-      url = string
-      username = string
-      password = string
-    })
-  }
-
   group "monitoring" {
     count = 1
 
@@ -18,21 +10,32 @@ job "prometheus" {
       }
     }
 
-    restart {
-      attempts = 2
-      interval = "30m"
-      delay    = "15s"
-      mode     = "fail"
-    }
-
     task "prometheus" {
       template {
         change_mode = "noop"
-        source = "prometheus.yml.tpl"
+        data = <<EOF
+---
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+remote_write:
+  - url: ${ prometheus_url }
+    basic_auth:
+      username: ${ prometheus_username }
+      password: ${ prometheus_password }
+
+scrape_configs:
+  - job_name: 'nomad_metrics'
+    metrics_path: /v1/metrics
+    params:
+      format: [prometheus]
+
+EOF
         destination = "local/prometheus.yml"
       }
 
-      driver = "podman"
+      driver = "docker"
 
       config {
         image = "prom/prometheus:latest"
@@ -48,6 +51,7 @@ job "prometheus" {
         name = "prometheus"
         tags = ["urlprefix-/"]
         port = "prometheus_ui"
+        provider = "nomad"
 
         check {
           name     = "prometheus_ui port alive"
