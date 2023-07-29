@@ -175,8 +175,8 @@ provider "nomad" {
 
 resource "nomad_job" "monitoring" {
   jobspec = templatefile("${path.module}/prometheus.job.hcl", {
-    prometheus_url = var.prometheus.url,
-    prometheus_username = var.prometheus.username,
-    prometheus_password = var.prometheus.password,
+    prometheus_url = var.prometheus_url,
+    prometheus_username = var.prometheus_username,
+    prometheus_password = var.prometheus_password,
   })
 }
