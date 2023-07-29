@@ -170,7 +170,7 @@ resource "webdock_shell_user" "nomad_client_user" {
 # setup prometheus
 provider "nomad" {
   address = "http://${webdock_server.nomad_server[0].ipv4}:4646"
-  secret_id = output.nomad_server_bootstrap_token
+  secret_id = random_uuid.nomad_bootstrap_token
 }
 
 resource "nomad_job" "monitoring" {
