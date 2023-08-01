@@ -11,7 +11,7 @@ apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb
 
 apt update
 
-apt-get -y install nomad ufw curl
+apt-get -y install nomad ufw curl consul
 
 # enable firewall
 
@@ -23,10 +23,35 @@ ufw allow 4648
 
 ufw allow ssh
 
+# consul dns
+ufw allow 8600
+
+# consul http/s grpc/grpc tls
+ufw allow 8500:8503/tcp
+
+# consul serf
+ufw allow 8301
+
+ufw allow 8302
+
+# consul rpc
+ufw allow 8300
+
 ufw --force enable
 
+systemctl enable consul.service
+
+# copy consul configuration
+mv /tmp/consul.hcl /etc/consul.d/consul.hcl
+
+mv /tmp/consul-agent-ca.pem /etc/consul.d/consul-agent-ca.pem
+
+sudo chown consul:consul -R /etc/consul.d
+
+service consul start
+
 # copy nomad configuration
-cp /tmp/nomad.hcl /etc/nomad.d/nomad.hcl
+mv /tmp/nomad.hcl /etc/nomad.d/nomad.hcl
 
 if [ "$1" = "server" ]; then
 # run nomad with non privileged user
@@ -40,7 +65,7 @@ systemctl enable nomad.service
 service nomad start
 
 # if this is the first server, bootstrap the acl
-if [ "$3" = "$3" ] && [ "$1" = "server" ]; then
+if [ "$2" = "$3" ] && [ "$1" = "server" ]; then
 # wait for nomad to start
 curl --retry 5 --retry-connrefused --retry-delay 5 http://127.0.0.1:4646/v1/status/leader
 

@@ -17,3 +17,8 @@ variable "nomad_client_instance_count" {
   type = number
   description = "The number of nomad clients to deploy"
 }
+
+variable "consul_server_instance_count" {
+  type = number
+  description = "The number of consul servers to deploy"
+}
