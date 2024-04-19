@@ -2,6 +2,7 @@ package resource
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,6 +67,11 @@ func readServer(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 
 	server, err := client.GetServerBySlug(context.Background(), d.Id())
 	if err != nil {
+		if errors.Is(err, api.ErrServerNotFound) {
+			d.SetId("")
+			return nil
+		}
+
 		return diag.Errorf("error getting server: %v", err)
 	}
 
