@@ -318,6 +318,10 @@ func (c *Client) GetServerBySlug(ctx context.Context, serverSlug string) (*Serve
 	defer res.Body.Close()
 
 	if errorStatus(res.StatusCode) {
+		if res.StatusCode == http.StatusNotFound {
+			return nil, ErrServerNotFound
+		}
+
 		apiError := APIError{}
 
 		if err := json.NewDecoder(res.Body).Decode(&apiError); err != nil {
