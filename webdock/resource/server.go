@@ -3,7 +3,9 @@ package resource
 import (
 	"context"
 	"errors"
+	"math/rand"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -11,6 +13,11 @@ import (
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 	"github.com/zolamk/terraform-provider-webdock/webdock/utils"
+)
+
+const (
+	minSleep = 5
+	maxSleep = 15
 )
 
 func Server() *schema.Resource {
@@ -26,6 +33,12 @@ func Server() *schema.Resource {
 
 func createServer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.CombinedConfig)
+
+	delay := time.Second * time.Duration((rand.Intn(maxSleep-minSleep+1) + minSleep))
+
+	client.Logger.With("delay", delay).Info("sleeping to avoid concurrency issues")
+
+	time.Sleep(delay)
 
 	opts := api.CreateServerRequestBody{
 		Name:           d.Get("name").(string),
