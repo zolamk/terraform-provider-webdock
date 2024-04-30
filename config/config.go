@@ -2,7 +2,9 @@ package config
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/zolamk/terraform-provider-webdock/api"
@@ -16,11 +18,13 @@ type Config struct {
 
 type CombinedConfig struct {
 	api.ClientInterface
+	Logger *slog.Logger
 }
 
 func NewCombinedConfig(config *Config, client api.ClientInterface) *CombinedConfig {
 	return &CombinedConfig{
 		client,
+		slog.New(slog.NewTextHandler(os.Stdout, nil)),
 	}
 }
 
@@ -39,5 +43,6 @@ func (c *Config) Client() (*CombinedConfig, diag.Diagnostics) {
 
 	return &CombinedConfig{
 		webdockClient,
+		slog.New(slog.NewTextHandler(os.Stdout, nil)),
 	}, nil
 }
