@@ -34,6 +34,42 @@ func TestResourceWebdockServerCreate(t *testing.T) {
 				client.On("CreateServer", ctx, mock.Anything).Once().Return(nil, mockErr)
 			},
 		},
+		"when create server fails with too many server error": {
+			rd:    resource.Server().Data(&terraform.InstanceState{}),
+			meta:  config.NewCombinedConfig(nil, client),
+			diags: nil,
+			mock: func() {
+				client.On("CreateServer", ctx, mock.Anything).Twice().Return(nil, &api.APIError{
+					ID:      0,
+					Message: "You are creating too many servers in too short of a timespan. Please wait a while and try again a bit later.",
+				})
+
+				client.On("CreateServer", ctx, mock.Anything).Once().Return(&api.Server{
+					SSHPasswordAuthEnabled: true,
+					WordPressLockDown:      true,
+					Aliases:                []string{"test"},
+					Date:                   "2022-12-22T03:54:56+03:00",
+					Image:                  "test",
+					Ipv4:                   "83.69.106.70",
+					Ipv6:                   "8b34:f82b:999a:1ab5:0cad:f252:af94:bf80",
+					Location:               "test",
+					Name:                   "test",
+					Profile:                "test",
+					Slug:                   "test",
+					SnapshotRunTime:        0,
+					Status:                 "provisioning",
+					Virtualization:         "containerd",
+					WebServer:              "nginx",
+					CallbackID:             "callback",
+				}, nil)
+
+				client.On("GetEvents", ctx, mock.Anything).Once().Return(api.Events{
+					{
+						Status: "finished",
+					},
+				}, nil)
+			},
+		},
 		"when wait for action fails": {
 			rd:    resource.Server().Data(&terraform.InstanceState{}),
 			meta:  config.NewCombinedConfig(nil, client),

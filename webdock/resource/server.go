@@ -14,6 +14,10 @@ import (
 	"github.com/zolamk/terraform-provider-webdock/webdock/utils"
 )
 
+var (
+	tooManyServersMessage = "You are creating too many servers in too short of a timespan. Please wait a while and try again a bit later."
+)
+
 func Server() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: createServer,
@@ -26,6 +30,9 @@ func Server() *schema.Resource {
 }
 
 func createServer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	retryCount := 3
+	retriedTimes := 0
+
 	client := meta.(*config.CombinedConfig)
 
 	delay := time.Duration(client.CreatedServersCount.Value()*10) * time.Second
@@ -48,8 +55,22 @@ func createServer(ctx context.Context, d *schema.ResourceData, meta interface{})
 		opts.Slug = attr.(string)
 	}
 
+createServer:
 	server, err := client.CreateServer(ctx, opts)
 	if err != nil {
+		apiErr := &api.APIError{}
+		if (errors.As(err, apiErr) || errors.As(err, &apiErr)) && apiErr.Message == tooManyServersMessage && retriedTimes < retryCount {
+			retriedTimes++
+
+			delay := time.Duration(retriedTimes) * time.Minute
+
+			client.Logger.With("delay", delay).Info("got too many servers error, will retry after a while")
+
+			time.Sleep(delay)
+
+			goto createServer
+		}
+
 		return diag.FromErr(err)
 	}
 
