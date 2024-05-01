@@ -25,6 +25,12 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("WEBDOCK_API_URL", "https://api.webdock.io"),
 				Description: "The URL to use for the Webdock API.",
 			},
+			"server_up_port": {
+				Type:        schema.TypeInt,
+				Required:    false,
+				DefaultFunc: schema.EnvDefaultFunc("WEBDOCK_SERVER_UP_PORT", 22),
+				Description: "The port to use when checking if the server is actually reachable.",
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"webdock_servers":     datasource.Servers(),
@@ -59,6 +65,7 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 	config := config.Config{
 		Token:            d.Get("token").(string),
 		APIEndpoint:      d.Get("api_endpoint").(string),
+		ServerUpPort:     d.Get("server_up_port").(int),
 		TerraformVersion: terraformVersion,
 	}
 

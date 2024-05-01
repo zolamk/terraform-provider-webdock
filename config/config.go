@@ -15,6 +15,7 @@ type Config struct {
 	Token            string
 	APIEndpoint      string
 	TerraformVersion string
+	ServerUpPort     int
 }
 
 type Counter struct {
@@ -39,6 +40,7 @@ type CombinedConfig struct {
 	api.ClientInterface
 	Logger              *slog.Logger
 	CreatedServersCount Counter
+	ServerUpPort        int
 }
 
 func NewCombinedConfig(config *Config, client api.ClientInterface) *CombinedConfig {
@@ -46,6 +48,7 @@ func NewCombinedConfig(config *Config, client api.ClientInterface) *CombinedConf
 		client,
 		slog.New(slog.NewTextHandler(os.Stdout, nil)),
 		Counter{},
+		config.ServerUpPort,
 	}
 }
 
@@ -66,5 +69,6 @@ func (c *Config) Client() (*CombinedConfig, diag.Diagnostics) {
 		webdockClient,
 		slog.New(slog.NewTextHandler(os.Stdout, nil)),
 		Counter{},
+		c.ServerUpPort,
 	}, nil
 }

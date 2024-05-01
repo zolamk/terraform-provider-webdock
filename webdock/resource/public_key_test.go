@@ -23,21 +23,18 @@ func TestResourceWebdockPublicKeyCreate(t *testing.T) {
 	mockErr := errors.New("mock error")
 	tests := map[string]struct {
 		rd    *schema.ResourceData
-		meta  interface{}
 		diags diag.Diagnostics
 		mock  func()
 	}{
 		"when create public key fails": {
 			rd:    resource.PublicKey().Data(&terraform.InstanceState{}),
-			meta:  config.NewCombinedConfig(nil, client),
 			diags: diag.FromErr(mockErr),
 			mock: func() {
 				client.On("CreatePublicKey", ctx, mock.Anything).Once().Return(nil, mockErr)
 			},
 		},
 		"success": {
-			rd:   resource.PublicKey().Data(&terraform.InstanceState{}),
-			meta: config.NewCombinedConfig(nil, client),
+			rd: resource.PublicKey().Data(&terraform.InstanceState{}),
 			mock: func() {
 				client.On("CreatePublicKey", ctx, mock.Anything).Once().Return(&api.PublicKey{
 					Id:      json.Number("1"),
@@ -53,7 +50,9 @@ func TestResourceWebdockPublicKeyCreate(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := resource.PublicKey().CreateContext(ctx, test.rd, test.meta)
+			diags := resource.PublicKey().CreateContext(ctx, test.rd, config.NewCombinedConfig(&config.Config{
+				ServerUpPort: 2200,
+			}, client))
 
 			assert.Equal(t, test.diags, diags)
 		})
@@ -66,13 +65,11 @@ func TestResourceWebdockPublicKeyDelete(t *testing.T) {
 	mockErr := errors.New("mock error")
 	tests := map[string]struct {
 		rd    *schema.ResourceData
-		meta  interface{}
 		diags diag.Diagnostics
 		mock  func()
 	}{
 		"when converting public key id to int64 fails": {
 			rd:    resource.PublicKey().Data(&terraform.InstanceState{}),
-			meta:  config.NewCombinedConfig(nil, client),
 			diags: diag.Errorf("error converting public key id to int64: strconv.ParseInt: parsing \"\": invalid syntax"),
 			mock:  func() {},
 		},
@@ -80,7 +77,6 @@ func TestResourceWebdockPublicKeyDelete(t *testing.T) {
 			rd: resource.PublicKey().Data(&terraform.InstanceState{
 				ID: "1",
 			}),
-			meta:  config.NewCombinedConfig(nil, client),
 			diags: diag.FromErr(mockErr),
 			mock: func() {
 				client.On("DeletePublicKey", ctx, mock.Anything).Once().Return(mockErr)
@@ -90,7 +86,6 @@ func TestResourceWebdockPublicKeyDelete(t *testing.T) {
 			rd: resource.PublicKey().Data(&terraform.InstanceState{
 				ID: "1",
 			}),
-			meta: config.NewCombinedConfig(nil, client),
 			mock: func() {
 				client.On("DeletePublicKey", ctx, mock.Anything).Once().Return(nil)
 			},
@@ -101,7 +96,9 @@ func TestResourceWebdockPublicKeyDelete(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := resource.PublicKey().DeleteContext(ctx, test.rd, test.meta)
+			diags := resource.PublicKey().DeleteContext(ctx, test.rd, config.NewCombinedConfig(&config.Config{
+				ServerUpPort: 2200,
+			}, client))
 
 			assert.Equal(t, test.diags, diags)
 		})
@@ -114,13 +111,11 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 	mockErr := errors.New("mock error")
 	tests := map[string]struct {
 		rd    *schema.ResourceData
-		meta  interface{}
 		diags diag.Diagnostics
 		mock  func()
 	}{
 		"when get public keys fails": {
 			rd:    resource.PublicKey().Data(&terraform.InstanceState{}),
-			meta:  config.NewCombinedConfig(nil, client),
 			diags: diag.Errorf("error getting public key: %v", mockErr),
 			mock: func() {
 				client.On("GetPublicKeys", ctx).Once().Return(nil, mockErr)
@@ -130,7 +125,6 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 			rd: resource.PublicKey().Data(&terraform.InstanceState{
 				ID: "3",
 			}),
-			meta:  config.NewCombinedConfig(nil, client),
 			diags: diag.Errorf("error getting public key: not found"),
 			mock: func() {
 				client.On("GetPublicKeys", ctx).Once().Return(api.PublicKeys{
@@ -153,7 +147,6 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 			rd: resource.PublicKey().Data(&terraform.InstanceState{
 				ID: "3",
 			}),
-			meta:  config.NewCombinedConfig(nil, client),
 			diags: diag.Errorf("error getting public key: not found"),
 			mock: func() {
 				client.On("GetPublicKeys", ctx).Once().Return(nil, nil)
@@ -163,7 +156,6 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 			rd: resource.PublicKey().Data(&terraform.InstanceState{
 				ID: "2",
 			}),
-			meta: config.NewCombinedConfig(nil, client),
 			mock: func() {
 				client.On("GetPublicKeys", ctx).Once().Return(api.PublicKeys{
 					{
@@ -187,7 +179,9 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := resource.PublicKey().ReadContext(ctx, test.rd, test.meta)
+			diags := resource.PublicKey().ReadContext(ctx, test.rd, config.NewCombinedConfig(&config.Config{
+				ServerUpPort: 2200,
+			}, client))
 
 			assert.Equal(t, test.diags, diags)
 		})
