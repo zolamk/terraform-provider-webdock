@@ -27,7 +27,7 @@ func Provider() *schema.Provider {
 			},
 			"server_up_port": {
 				Type:        schema.TypeInt,
-				Required:    false,
+				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("WEBDOCK_SERVER_UP_PORT", 22),
 				Description: "The port to use when checking if the server is actually reachable.",
 			},
