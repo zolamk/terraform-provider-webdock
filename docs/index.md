@@ -23,3 +23,4 @@ description: |-
 
 - `api_endpoint` (String) The URL to use for the Webdock API.
 - `server_up_port` (Int) The port to be used when checking the server is actually up and ready to receive connections. by default 22.
+- `retry_limit` (Int) The number of times to retry certain operations with exponential backoff in between each try. by default 3.

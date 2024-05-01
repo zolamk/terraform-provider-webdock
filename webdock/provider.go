@@ -31,6 +31,12 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("WEBDOCK_SERVER_UP_PORT", 22),
 				Description: "The port to use when checking if the server is actually reachable.",
 			},
+			"retry_limit": {
+				Type:        schema.TypeInt,
+				Required:    true,
+				DefaultFunc: schema.EnvDefaultFunc("WEBDOCK_RETRY_LIMIT", 3),
+				Description: "The number of times to retry operations with exponetial backoff.",
+			},
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"webdock_servers":     datasource.Servers(),
@@ -67,6 +73,7 @@ func providerConfigure(d *schema.ResourceData, terraformVersion string) (interfa
 		APIEndpoint:      d.Get("api_endpoint").(string),
 		ServerUpPort:     d.Get("server_up_port").(int),
 		TerraformVersion: terraformVersion,
+		RetryLimit:       d.Get("retry_limit").(int),
 	}
 
 	return config.Client()
