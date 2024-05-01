@@ -53,7 +53,9 @@ func TestDataSourceWebdockLocationsRead(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			test.mock()
 
-			diags := datasource.Locations().ReadContext(ctx, test.rd, config.NewCombinedConfig(nil, client))
+			diags := datasource.Locations().ReadContext(ctx, test.rd, config.NewCombinedConfig(&config.Config{
+				ServerUpPort: 2200,
+			}, client))
 
 			assert.Equal(t, test.diags, diags)
 		})
