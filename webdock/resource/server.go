@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"errors"
+	"math"
 	"strings"
 	"time"
 
@@ -30,8 +31,9 @@ func Server() *schema.Resource {
 }
 
 func createServer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	retryCount := 3
-	retriedTimes := 0
+	currentAttempt := 0
+
+	initialInterval := 1 * time.Minute
 
 	client := meta.(*config.CombinedConfig)
 
@@ -59,10 +61,10 @@ createServer:
 	server, err := client.CreateServer(ctx, opts)
 	if err != nil {
 		apiErr := &api.APIError{}
-		if (errors.As(err, apiErr) || errors.As(err, &apiErr)) && apiErr.Message == tooManyServersMessage && retriedTimes < retryCount {
-			retriedTimes++
+		if (errors.As(err, apiErr) || errors.As(err, &apiErr)) && apiErr.Message == tooManyServersMessage && currentAttempt < client.RetryLimit {
+			currentAttempt++
 
-			delay := time.Duration(retriedTimes) * time.Minute
+			delay := initialInterval * time.Duration(math.Pow(2, float64(currentAttempt-1)))
 
 			client.Logger.With("delay", delay).Info("got too many servers error, will retry after a while")
 
@@ -77,7 +79,7 @@ createServer:
 	d.SetId(server.Slug)
 
 	if server.CallbackID != "" {
-		err = utils.WaitForServerToBeUP(ctx, client, server.CallbackID, server.Ipv4, client.ServerUpPort)
+		err = utils.WaitForAction(ctx, client, server.CallbackID)
 		if err != nil {
 			return diag.Errorf("server (%s) create event (%s) errored: %v", d.Id(), server.CallbackID, err)
 		}

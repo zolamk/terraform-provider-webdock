@@ -159,6 +159,7 @@ func TestResourceWebdockServerCreate(t *testing.T) {
 
 			diags := resource.Server().CreateContext(ctx, test.rd, config.NewCombinedConfig(&config.Config{
 				ServerUpPort: 2200,
+				RetryLimit:   3,
 			}, client))
 
 			assert.Equal(t, test.diags, diags)
@@ -213,6 +214,7 @@ func TestResourceWebdockServerRead(t *testing.T) {
 
 			diags := resource.Server().ReadContext(ctx, test.rd, config.NewCombinedConfig(&config.Config{
 				ServerUpPort: 2200,
+				RetryLimit:   3,
 			}, client))
 
 			assert.Equal(t, test.diags, diags)

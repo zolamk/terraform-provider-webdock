@@ -16,6 +16,7 @@ type Config struct {
 	APIEndpoint      string
 	TerraformVersion string
 	ServerUpPort     int
+	RetryLimit       int
 }
 
 type Counter struct {
@@ -41,6 +42,7 @@ type CombinedConfig struct {
 	Logger              *slog.Logger
 	CreatedServersCount Counter
 	ServerUpPort        int
+	RetryLimit          int
 }
 
 func NewCombinedConfig(config *Config, client api.ClientInterface) *CombinedConfig {
@@ -49,6 +51,7 @@ func NewCombinedConfig(config *Config, client api.ClientInterface) *CombinedConf
 		slog.New(slog.NewTextHandler(os.Stdout, nil)),
 		Counter{},
 		config.ServerUpPort,
+		config.RetryLimit,
 	}
 }
 
@@ -70,5 +73,6 @@ func (c *Config) Client() (*CombinedConfig, diag.Diagnostics) {
 		slog.New(slog.NewTextHandler(os.Stdout, nil)),
 		Counter{},
 		c.ServerUpPort,
+		c.RetryLimit,
 	}, nil
 }
