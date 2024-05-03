@@ -27,6 +27,9 @@ func Server() *schema.Resource {
 		DeleteContext: deleteServer,
 		SchemaVersion: 0,
 		Schema:        schemas.Server(),
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(time.Hour * 3),
+		},
 	}
 }
 
@@ -78,13 +81,9 @@ createServer:
 
 	d.SetId(server.Slug)
 
-	if server.CallbackID != "" {
-		err = utils.WaitForAction(ctx, client, server.CallbackID)
-		if err != nil {
-			return diag.Errorf("server (%s) create event (%s) errored: %v", d.Id(), server.CallbackID, err)
-		}
-	} else {
-		return diag.Errorf("unable to find server (%s) create event", d.Id())
+	err = utils.WaitForServerToBeUP(ctx, client, server.CallbackID, server.Ipv4, client.ServerUpPort)
+	if err != nil {
+		return diag.Errorf("server (%s) create event (%s) errored: %v", d.Id(), server.CallbackID, err)
 	}
 
 	if err := setServerAttributes(d, server); err != nil {

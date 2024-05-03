@@ -24,6 +24,7 @@ description: |-
 
 ### Optional
 
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `virtualization` (String) Virtualization type for your new server. container means the server will be a Webdock LXD VPS and kvm means it will be a KVM Virtual machine. If you specify a snapshotId in the request, the server type from which the snapshot belongs much match the virtualization selected. Reason being that KVM images are incompatible with LXD images and vice-versa.
 
 ### Read-Only
@@ -39,3 +40,10 @@ description: |-
 - `status` (String) Server status
 - `webserver` (String) Webserver type (apache, nginx, none)
 - `wordpress_lockdown` (Boolean) Whether WordPress is in lockdown mode
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String)

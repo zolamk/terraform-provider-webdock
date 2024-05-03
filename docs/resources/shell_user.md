@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `password` (String) shell user password
+- `password` (String, Sensitive) shell user password
 - `public_keys` (List of Number) shell user public keys
 - `server_slug` (String) shell user server slug
 - `username` (String) shell user username
