@@ -70,7 +70,7 @@ func WaitForServerToBeUP(ctx context.Context, client api.ClientInterface, callba
 			event := (events)[0]
 
 			if event.Status == target {
-				conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip, port))
+				conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", ip, port), time.Minute)
 				if err != nil {
 					return event, working, nil
 				}
