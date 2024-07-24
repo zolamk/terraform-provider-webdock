@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,6 +32,14 @@ func createShellUser(ctx context.Context, d *schema.ResourceData, meta interface
 	for _, key := range d.Get("public_keys").([]interface{}) {
 		publicKeys = append(publicKeys, key.(int))
 	}
+
+	delay := time.Duration(client.CreateUsersCount.Value()*10) * time.Second
+
+	client.CreateUsersCount.Inc()
+
+	client.Logger.With("delay", delay).Info("sleeping to avoid concurrency issues")
+
+	time.Sleep(delay)
 
 	createShellUserBody := api.CreateShellUserRequestBody{
 		Username:   d.Get("username").(string),
