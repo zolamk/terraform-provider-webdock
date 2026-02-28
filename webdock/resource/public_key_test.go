@@ -2,7 +2,6 @@ package resource_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"testing"
 
@@ -11,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 	"github.com/zolamk/terraform-provider-webdock/webdock/resource"
@@ -30,14 +29,14 @@ func TestResourceWebdockPublicKeyCreate(t *testing.T) {
 			rd:    resource.PublicKey().Data(&terraform.InstanceState{}),
 			diags: diag.FromErr(mockErr),
 			mock: func() {
-				client.On("CreatePublicKey", ctx, mock.Anything).Once().Return(nil, mockErr)
+				client.On("CreatePublicKey", mock.Anything).Once().Return(webdock.PublicKey{}, mockErr)
 			},
 		},
 		"success": {
 			rd: resource.PublicKey().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("CreatePublicKey", ctx, mock.Anything).Once().Return(&api.PublicKey{
-					Id:      json.Number("1"),
+				client.On("CreatePublicKey", mock.Anything).Once().Return(webdock.PublicKey{
+					ID:      1,
 					Created: "2022-05-03T15:05:34+03:00",
 					Key:     "test",
 					Name:    "test",
@@ -79,7 +78,7 @@ func TestResourceWebdockPublicKeyDelete(t *testing.T) {
 			}),
 			diags: diag.FromErr(mockErr),
 			mock: func() {
-				client.On("DeletePublicKey", ctx, mock.Anything).Once().Return(mockErr)
+				client.On("DeletePublicKey", mock.Anything).Once().Return(mockErr)
 			},
 		},
 		"success": {
@@ -87,7 +86,7 @@ func TestResourceWebdockPublicKeyDelete(t *testing.T) {
 				ID: "1",
 			}),
 			mock: func() {
-				client.On("DeletePublicKey", ctx, mock.Anything).Once().Return(nil)
+				client.On("DeletePublicKey", mock.Anything).Once().Return(nil)
 			},
 		},
 	}
@@ -118,7 +117,7 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 			rd:    resource.PublicKey().Data(&terraform.InstanceState{}),
 			diags: diag.Errorf("error getting public key: %v", mockErr),
 			mock: func() {
-				client.On("GetPublicKeys", ctx).Once().Return(nil, mockErr)
+				client.On("ListAccountPublicKeys", mock.Anything).Once().Return(nil, mockErr)
 			},
 		},
 		"when public key is not found": {
@@ -127,15 +126,15 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 			}),
 			diags: diag.Errorf("error getting public key: not found"),
 			mock: func() {
-				client.On("GetPublicKeys", ctx).Once().Return(api.PublicKeys{
+				client.On("ListAccountPublicKeys", mock.Anything).Once().Return([]webdock.PublicKey{
 					{
-						Id:      json.Number("1"),
+						ID:      1,
 						Created: "2022-03-20T04:32:12+03:00",
 						Key:     "test",
 						Name:    "test",
 					},
 					{
-						Id:      json.Number("2"),
+						ID:      2,
 						Created: "2022-03-20T04:32:12+03:00",
 						Key:     "test2",
 						Name:    "test2",
@@ -149,7 +148,7 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 			}),
 			diags: diag.Errorf("error getting public key: not found"),
 			mock: func() {
-				client.On("GetPublicKeys", ctx).Once().Return(nil, nil)
+				client.On("ListAccountPublicKeys", mock.Anything).Once().Return(nil, nil)
 			},
 		},
 		"success": {
@@ -157,15 +156,15 @@ func TestResourceWebdockPublicKeyRead(t *testing.T) {
 				ID: "2",
 			}),
 			mock: func() {
-				client.On("GetPublicKeys", ctx).Once().Return(api.PublicKeys{
+				client.On("ListAccountPublicKeys", mock.Anything).Once().Return([]webdock.PublicKey{
 					{
-						Id:      json.Number("1"),
+						ID:      1,
 						Created: "2022-03-20T04:32:12+03:00",
 						Key:     "test",
 						Name:    "test",
 					},
 					{
-						Id:      json.Number("2"),
+						ID:      2,
 						Created: "2022-03-20T04:32:12+03:00",
 						Key:     "test2",
 						Name:    "test2",

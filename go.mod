@@ -1,14 +1,12 @@
 module github.com/zolamk/terraform-provider-webdock
 
-go 1.22
-
-toolchain go1.22.0
+go 1.24.5
 
 require (
-	github.com/google/go-querystring v1.1.0
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
 	github.com/stretchr/testify v1.9.0
+	github.com/webdock-io/go-sdk v1.0.0
 )
 
 require (

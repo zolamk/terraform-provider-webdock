@@ -9,14 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
-func TestDataSourceWebdockProfilesRead(t *testing.T) {
+func TestDataSourceWebdockProfiles(t *testing.T) {
 	ctx := context.Background()
 	client := &mocks.ClientInterface{}
 	mockErr := errors.New("mock error")
@@ -27,30 +26,31 @@ func TestDataSourceWebdockProfilesRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: datasource.Profiles().Data(&terraform.InstanceState{}),
+			rd: datasource.Profiles().Data(&terraform.InstanceState{
+				Attributes: map[string]string{
+					"location_id": "test",
+				},
+			}),
 			mock: func() {
-				client.On("GetServersProfiles", ctx, mock.Anything).Once().Return(api.ServerProfiles{
-					api.ServerProfile{
-						CPU: api.CPU{
-							Cores:   4,
-							Threads: 8,
-						},
-						Disk: 10,
-						Name: "test",
-						Price: api.Price{
-							Amount:   10,
-							Currency: "USD",
-						},
-						RAM:  10,
-						Slug: "test",
+				opts := webdock.ListPossibleProfilesInLocationOptions{LocationID: "test"}
+				client.On("ListPossibleProfilesInLocation", opts).Once().Return([]webdock.Profile{
+					{
+						Name:        "test",
+						Slug:        "test",
+						Description: "test",
 					},
 				}, nil)
 			},
 		},
-		"error: ": {
-			rd: datasource.Profiles().Data(&terraform.InstanceState{}),
+		"error:": {
+			rd: datasource.Profiles().Data(&terraform.InstanceState{
+				Attributes: map[string]string{
+					"location_id": "test",
+				},
+			}),
 			mock: func() {
-				client.On("GetServersProfiles", ctx, mock.Anything).Once().Return(nil, mockErr)
+				opts := webdock.ListPossibleProfilesInLocationOptions{LocationID: "test"}
+				client.On("ListPossibleProfilesInLocation", opts).Once().Return(nil, mockErr)
 			},
 			diags: diag.FromErr(errors.New("mock error")),
 		},

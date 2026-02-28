@@ -2,7 +2,6 @@ package datasource_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"testing"
 
@@ -10,14 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
-func TestDataSourceWebdockPublicKeysRead(t *testing.T) {
+func TestDataSourceWebdockPublicKeys(t *testing.T) {
 	ctx := context.Background()
 	client := &mocks.ClientInterface{}
 	mockErr := errors.New("mock error")
@@ -30,20 +28,19 @@ func TestDataSourceWebdockPublicKeysRead(t *testing.T) {
 		"success": {
 			rd: datasource.PublicKeys().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetPublicKeys", ctx, mock.Anything).Once().Return(api.PublicKeys{
-					api.PublicKey{
-						Id:      json.Number("1"),
-						Created: "02/03/2022 20:37:27",
-						Name:    "test",
-						Key:     "public key content",
+				client.On("ListAccountPublicKeys", webdock.ListAccountPublicKeysOptions{}).Once().Return([]webdock.PublicKey{
+					{
+						ID:   1,
+						Name: "test",
+						Key:  "test",
 					},
 				}, nil)
 			},
 		},
-		"error: ": {
+		"error:": {
 			rd: datasource.PublicKeys().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetPublicKeys", ctx, mock.Anything).Once().Return(nil, mockErr)
+				client.On("ListAccountPublicKeys", webdock.ListAccountPublicKeysOptions{}).Once().Return(nil, mockErr)
 			},
 			diags: diag.FromErr(errors.New("mock error")),
 		},
