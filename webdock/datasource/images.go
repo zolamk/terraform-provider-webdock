@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/samber/lo"
 	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
@@ -39,19 +40,11 @@ func readImages(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 
 	var mappedImages []map[string]interface{}
 	for _, i := range images {
-		webServer := ""
-		if i.WebServer != nil {
-			webServer = *i.WebServer
-		}
-		php := ""
-		if i.PHPVersion != nil {
-			php = *i.PHPVersion
-		}
 		mappedImages = append(mappedImages, map[string]interface{}{
 			"slug":        i.Slug,
 			"name":        i.Name,
-			"web_server":  webServer,
-			"php_version": php,
+			"web_server":  lo.FromPtr(i.WebServer),
+			"php_version": lo.FromPtr(i.PHPVersion),
 		})
 	}
 
