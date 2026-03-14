@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/api"
 )
@@ -37,7 +37,7 @@ func WaitForAction(ctx context.Context, client api.ClientInterface, callbackID s
 			return event, event.Status, nil
 		}
 	)
-	_, err := (&resource.StateChangeConf{
+	_, err := (&retry.StateChangeConf{
 		Pending:    []string{pending, working},
 		Refresh:    refreshfn,
 		Target:     []string{target},
@@ -84,7 +84,7 @@ func WaitForServerToBeUP(ctx context.Context, client api.ClientInterface, callba
 			return event, event.Status, nil
 		}
 	)
-	_, err := (&resource.StateChangeConf{
+	_, err := (&retry.StateChangeConf{
 		Pending:    []string{pending, working},
 		Refresh:    refreshfn,
 		Target:     []string{target},
