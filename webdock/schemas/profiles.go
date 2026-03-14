@@ -16,23 +16,10 @@ func Profile() map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Profile name",
 		},
-		"ram": {
-			Type:        schema.TypeInt,
+		"description": {
+			Type:        schema.TypeString,
 			Computed:    true,
-			Description: "Profile RAM in MiB",
-		},
-		"disk": {
-			Type:        schema.TypeInt,
-			Computed:    true,
-			Description: "Disk size in MiB",
-		},
-		"cpu": {
-			Type:     schema.TypeMap,
-			Computed: true,
-			Elem: &schema.Schema{
-				Type: schema.TypeInt,
-			},
-			Description: "CPU model",
+			Description: "Profile description",
 		},
 	}
 }

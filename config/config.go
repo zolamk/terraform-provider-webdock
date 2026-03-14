@@ -1,19 +1,17 @@
 package config
 
 import (
-	"context"
 	"log/slog"
-	"net/http"
 	"os"
 	"sync"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/api"
 )
 
 type Config struct {
 	Token            string
-	APIEndpoint      string
 	TerraformVersion string
 	ServerUpPort     int
 	RetryLimit       int
@@ -57,21 +55,11 @@ func NewCombinedConfig(config *Config, client api.ClientInterface) *CombinedConf
 	}
 }
 
-func setAuthorization(c *Config) api.RequestEditorFn {
-	return func(ctx context.Context, req *http.Request) error {
-		req.Header.Add("Authorization", "Bearer "+c.Token)
-		return nil
-	}
-}
-
 func (c *Config) Client() (*CombinedConfig, diag.Diagnostics) {
-	webdockClient, err := api.NewClient(c.APIEndpoint+"/v1", api.WithRequestEditorFn(setAuthorization(c)))
-	if err != nil {
-		return nil, diag.Errorf("error creating api client: %v", err)
-	}
+	client := webdock.New(webdock.WebdockOptions{TOKEN: c.Token})
 
 	return &CombinedConfig{
-		webdockClient,
+		&client,
 		slog.New(slog.NewTextHandler(os.Stdout, nil)),
 		Counter{},
 		Counter{},

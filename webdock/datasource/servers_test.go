@@ -9,14 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
-func TestDataSourceWebdockServersRead(t *testing.T) {
+func TestDataSourceWebdockServers(t *testing.T) {
 	ctx := context.Background()
 	client := &mocks.ClientInterface{}
 	mockErr := errors.New("mock error")
@@ -27,33 +26,47 @@ func TestDataSourceWebdockServersRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: datasource.Servers().Data(&terraform.InstanceState{}),
+			rd: datasource.Servers().Data(&terraform.InstanceState{
+				Attributes: map[string]string{
+					"status": "all",
+				},
+			}),
 			mock: func() {
-				client.On("GetServers", ctx, mock.Anything).Once().Return(api.Servers{
-					api.Server{
+				opts := webdock.ListServerOptions{
+					Status: webdock.ListServersQuery("all"),
+				}
+				client.On("ListServer", opts).Once().Return(webdock.ListServers{
+					{
 						SSHPasswordAuthEnabled: true,
-						WordPressLockDown:      false,
-						Aliases:                []string{"alias1", "alias2"},
-						Date:                   "19/10/2022 03:12:13",
+						WordPressLockDown:      true,
+						Aliases:                []string{"test"},
+						Date:                   "2022-12-22T03:54:56+03:00",
 						Image:                  "test",
-						Ipv4:                   "149.57.225.5",
-						Ipv6:                   "b946:997f:cc88:0251:e7dd:dd2e:c3ef:3764",
+						IPv4:                   "127.0.0.1",
+						IPv6:                   "8b34:f82b:999a:1ab5:0cad:f252:af94:bf80",
 						Location:               "test",
 						Name:                   "test",
 						Profile:                "test",
 						Slug:                   "test",
-						SnapshotRunTime:        10,
-						Status:                 "test",
-						Virtualization:         "test",
-						WebServer:              "test",
+						SnapshotRunTime:        0,
+						Status:                 "provisioning",
+						Virtualization:         "containerd",
+						WebServer:              "nginx",
 					},
 				}, nil)
 			},
 		},
-		"error: ": {
-			rd: datasource.Servers().Data(&terraform.InstanceState{}),
+		"error:": {
+			rd: datasource.Servers().Data(&terraform.InstanceState{
+				Attributes: map[string]string{
+					"status": "all",
+				},
+			}),
 			mock: func() {
-				client.On("GetServers", ctx, mock.Anything).Once().Return(nil, mockErr)
+				opts := webdock.ListServerOptions{
+					Status: webdock.ListServersQuery("all"),
+				}
+				client.On("ListServer", opts).Once().Return(nil, mockErr)
 			},
 			diags: diag.FromErr(errors.New("mock error")),
 		},

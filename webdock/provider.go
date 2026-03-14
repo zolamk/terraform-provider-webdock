@@ -19,12 +19,6 @@ func Provider() *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("WEBDOCK_TOKEN", nil),
 				Description: "The token key for API operations.",
 			},
-			"api_endpoint": {
-				Type:        schema.TypeString,
-				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("WEBDOCK_API_URL", "https://api.webdock.io"),
-				Description: "The URL to use for the Webdock API.",
-			},
 			"server_up_port": {
 				Type:        schema.TypeInt,
 				Required:    true,
@@ -70,7 +64,6 @@ func Provider() *schema.Provider {
 func providerConfigure(d *schema.ResourceData, terraformVersion string) (interface{}, diag.Diagnostics) {
 	config := config.Config{
 		Token:            d.Get("token").(string),
-		APIEndpoint:      d.Get("api_endpoint").(string),
 		ServerUpPort:     d.Get("server_up_port").(int),
 		TerraformVersion: terraformVersion,
 		RetryLimit:       d.Get("retry_limit").(int),

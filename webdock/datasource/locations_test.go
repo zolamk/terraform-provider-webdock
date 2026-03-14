@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
@@ -28,8 +28,8 @@ func TestDataSourceWebdockLocationsRead(t *testing.T) {
 		"success": {
 			rd: datasource.Locations().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetServersLocations", ctx).Once().Return(api.ServerLocations{
-					api.ServerLocation{
+				client.On("ListLocations", webdock.ListLocationsOptions{}).Once().Return([]webdock.Location{
+					{
 						City:        "test",
 						Country:     "test",
 						Description: "test",
@@ -43,7 +43,7 @@ func TestDataSourceWebdockLocationsRead(t *testing.T) {
 		"error: ": {
 			rd: datasource.Locations().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetServersLocations", ctx).Once().Return(nil, mockErr)
+				client.On("ListLocations", webdock.ListLocationsOptions{}).Once().Return(nil, mockErr)
 			},
 			diags: diag.FromErr(errors.New("mock error")),
 		},

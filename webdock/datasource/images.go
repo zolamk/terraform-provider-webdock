@@ -5,6 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/samber/lo"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 )
@@ -31,15 +33,24 @@ func Images() *schema.Resource {
 func readImages(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.CombinedConfig)
 
-	images, err := client.GetServersImages(ctx)
-
+	images, err := client.ListOSImages(webdock.ListOSImagesOptions{})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
+	var mappedImages []map[string]interface{}
+	for _, i := range images {
+		mappedImages = append(mappedImages, map[string]interface{}{
+			"slug":        i.Slug,
+			"name":        i.Name,
+			"web_server":  lo.FromPtr(i.WebServer),
+			"php_version": lo.FromPtr(i.PHPVersion),
+		})
+	}
+
 	d.SetId("images")
 
-	if err = d.Set("images", images); err != nil {
+	if err = d.Set("images", mappedImages); err != nil {
 		return diag.Errorf("error setting images: %s", err)
 	}
 

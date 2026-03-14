@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
@@ -28,12 +28,14 @@ func TestDataSourceWebdockImages(t *testing.T) {
 		"success": {
 			rd: datasource.Images().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetServersImages", ctx).Once().Return(api.ServerImages{
-					api.ServerImage{
+				phpVersion := "1.0"
+				webServer := "test"
+				client.On("ListOSImages", webdock.ListOSImagesOptions{}).Once().Return([]webdock.Image{
+					{
 						Name:       "test",
-						PhpVersion: "1.0",
+						PHPVersion: &phpVersion,
 						Slug:       "test",
-						WebServer:  "test",
+						WebServer:  &webServer,
 					},
 				}, nil)
 			},
@@ -41,7 +43,7 @@ func TestDataSourceWebdockImages(t *testing.T) {
 		"error: ": {
 			rd: datasource.Images().Data(&terraform.InstanceState{}),
 			mock: func() {
-				client.On("GetServersImages", ctx).Once().Return(nil, mockErr)
+				client.On("ListOSImages", webdock.ListOSImagesOptions{}).Once().Return(nil, mockErr)
 			},
 			diags: diag.FromErr(errors.New("mock error")),
 		},

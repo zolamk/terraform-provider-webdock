@@ -2,7 +2,6 @@ package datasource_test
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"testing"
 
@@ -10,14 +9,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/test/mocks"
 	"github.com/zolamk/terraform-provider-webdock/webdock/datasource"
 )
 
-func TestDataSourceWebdockShellUsersRead(t *testing.T) {
+func TestDataSourceWebdockShellUsers(t *testing.T) {
 	ctx := context.Background()
 	client := &mocks.ClientInterface{}
 	mockErr := errors.New("mock error")
@@ -28,25 +26,38 @@ func TestDataSourceWebdockShellUsersRead(t *testing.T) {
 		mock  func()
 	}{
 		"success": {
-			rd: datasource.ShellUsers().Data(&terraform.InstanceState{}),
+			rd: datasource.ShellUsers().Data(&terraform.InstanceState{
+				Attributes: map[string]string{
+					"server_slug": "test",
+				},
+			}),
 			mock: func() {
-				client.On("GetShellUsers", ctx, mock.Anything).Once().Return(api.ShellUsers{
-					api.ShellUser{
-						ID:         json.Number("1"),
+				opts := webdock.ListServerShellUserOptions{
+					ServerSlug: "test",
+				}
+				client.On("ListServerShellUser", opts).Once().Return([]webdock.ShellUser{
+					{
+						ID:         1,
 						Username:   "test",
-						Password:   "test",
 						Group:      "test",
 						Shell:      "test",
-						PublicKeys: api.PublicKeys{},
-						Created:    "04/01/2022 06:36:01",
+						PublicKeys: []webdock.PublicKeyDTO{{ID: 1}},
+						Created:    "2022-12-22T03:54:56+03:00",
 					},
 				}, nil)
 			},
 		},
-		"error: ": {
-			rd: datasource.ShellUsers().Data(&terraform.InstanceState{}),
+		"error:": {
+			rd: datasource.ShellUsers().Data(&terraform.InstanceState{
+				Attributes: map[string]string{
+					"server_slug": "test",
+				},
+			}),
 			mock: func() {
-				client.On("GetShellUsers", ctx, mock.Anything).Once().Return(nil, mockErr)
+				opts := webdock.ListServerShellUserOptions{
+					ServerSlug: "test",
+				}
+				client.On("ListServerShellUser", opts).Once().Return(nil, mockErr)
 			},
 			diags: diag.FromErr(errors.New("mock error")),
 		},

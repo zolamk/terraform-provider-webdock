@@ -2,14 +2,13 @@ package resource
 
 import (
 	"context"
-	"errors"
 	"math"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zolamk/terraform-provider-webdock/api"
+	webdock "github.com/webdock-io/go-sdk"
 	"github.com/zolamk/terraform-provider-webdock/config"
 	"github.com/zolamk/terraform-provider-webdock/webdock/schemas"
 	"github.com/zolamk/terraform-provider-webdock/webdock/utils"
@@ -48,23 +47,17 @@ func createServer(ctx context.Context, d *schema.ResourceData, meta interface{})
 
 	time.Sleep(delay)
 
-	opts := api.CreateServerRequestBody{
-		Name:           d.Get("name").(string),
-		LocationId:     d.Get("location_id").(string),
-		ProfileSlug:    d.Get("profile_slug").(string),
-		ImageSlug:      d.Get("image_slug").(string),
-		Virtualization: d.Get("virtualization").(string),
-	}
-
-	if attr, ok := d.GetOk("slug"); ok {
-		opts.Slug = attr.(string)
+	opts := webdock.CreateServerFromImageOptions{
+		Name:        d.Get("name").(string),
+		LocationId:  d.Get("location_id").(string),
+		ProfileSlug: d.Get("profile_slug").(string),
+		ImageSlug:   d.Get("image_slug").(string),
 	}
 
 createServer:
-	server, err := client.CreateServer(ctx, opts)
+	createdServer, err := client.CreateServerFromImage(opts)
 	if err != nil {
-		apiErr := &api.APIError{}
-		if (errors.As(err, apiErr) || errors.As(err, &apiErr)) && apiErr.Message == tooManyServersMessage && currentAttempt < client.RetryLimit {
+		if strings.Contains(err.Error(), tooManyServersMessage) && currentAttempt < client.RetryLimit {
 			currentAttempt++
 
 			delay := initialInterval * time.Duration(math.Pow(2, float64(currentAttempt-1)))
@@ -79,14 +72,15 @@ createServer:
 		return diag.FromErr(err)
 	}
 
+	server := createdServer.Server
 	d.SetId(server.Slug)
 
-	err = utils.WaitForServerToBeUP(ctx, client, server.CallbackID, server.Ipv4, client.ServerUpPort)
+	err = utils.WaitForServerToBeUP(ctx, client, createdServer.CallbackID, server.IPv4, client.ServerUpPort)
 	if err != nil {
-		return diag.Errorf("server (%s) create event (%s) errored: %v", d.Id(), server.CallbackID, err)
+		return diag.Errorf("server (%s) create event (%s) errored: %v", d.Id(), createdServer.CallbackID, err)
 	}
 
-	if err := setServerAttributes(d, server); err != nil {
+	if err := setServerAttributes(d, &server); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -96,9 +90,9 @@ createServer:
 func readServer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.CombinedConfig)
 
-	server, err := client.GetServerBySlug(context.Background(), d.Id())
+	server, err := client.GetServerBySlug(webdock.GetServerBySlugOptions{Slug: d.Id()})
 	if err != nil {
-		if errors.Is(err, api.ErrServerNotFound) {
+		if strings.Contains(err.Error(), "Not Found") || strings.Contains(err.Error(), "404") {
 			d.SetId("")
 			return nil
 		}
@@ -106,7 +100,7 @@ func readServer(ctx context.Context, d *schema.ResourceData, meta interface{}) d
 		return diag.Errorf("error getting server: %v", err)
 	}
 
-	if err = setServerAttributes(d, server); err != nil {
+	if err = setServerAttributes(d, &server); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -119,16 +113,22 @@ func updateServer(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if d.HasChange("profile_slug") {
 		_, newProfileSlug := d.GetChange("profile_slug")
 
-		opts := api.ResizeServerRequestBody{
+		opts := webdock.ResizeServersOptions{
+			Slug:        d.Id(),
 			ProfileSlug: newProfileSlug.(string),
 		}
 
-		_, err := client.ResizeDryRun(ctx, d.Id(), opts)
+		dryOpts := webdock.DryRunResizeServerOptions{
+			ServerSlug:  d.Id(),
+			ProfileSlug: newProfileSlug.(string),
+		}
+
+		_, err := client.DryRunResizeServer(dryOpts)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		callbackID, err := client.ResizeServer(ctx, d.Id(), opts)
+		callbackID, err := client.ResizeServer(opts)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -141,11 +141,12 @@ func updateServer(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if d.HasChange("image_slug") {
 		_, newImageSlug := d.GetChange("image_slug")
 
-		opts := api.ReinstallServerRequestBody{
+		opts := webdock.ReinstallServerOptions{
+			Slug:      d.Id(),
 			ImageSlug: newImageSlug.(string),
 		}
 
-		callbackID, err := client.ReinstallServer(ctx, d.Id(), opts)
+		callbackID, err := client.ReinstallServer(opts)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -158,11 +159,12 @@ func updateServer(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if d.HasChange("name") {
 		_, newName := d.GetChange("name")
 
-		opts := api.PatchServerRequestBody{
-			Name: newName.(string),
+		opts := webdock.UpdateServerOptions{
+			ServerSlug: d.Id(),
+			Name:       newName.(string),
 		}
 
-		if _, err := client.PatchServer(ctx, d.Id(), opts); err != nil {
+		if _, err := client.UpdateServer(opts); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -173,18 +175,14 @@ func updateServer(ctx context.Context, d *schema.ResourceData, meta interface{})
 func deleteServer(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*config.CombinedConfig)
 
-	callbackID, err := client.DeleteServer(context.Background(), d.Id())
+	err := client.DeleteServerBySlug(webdock.DeleteServerBySlugOptions{Slug: d.Id()})
 
 	if err != nil {
-		if strings.Contains(err.Error(), "Not Found") {
+		if strings.Contains(err.Error(), "Not Found") || strings.Contains(err.Error(), "404") {
 			return nil
 		}
 
 		return diag.FromErr(err)
-	}
-
-	if err = utils.WaitForAction(ctx, client, callbackID); err != nil {
-		diag.Errorf("server (%s) delete event (%s) errorred: %s", d.Id(), callbackID, err)
 	}
 
 	d.SetId("")
@@ -192,7 +190,7 @@ func deleteServer(ctx context.Context, d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func setServerAttributes(d *schema.ResourceData, server *api.Server) error {
+func setServerAttributes(d *schema.ResourceData, server *webdock.Server) error {
 	if err := d.Set("name", server.Name); err != nil {
 		return err
 	}
@@ -217,19 +215,19 @@ func setServerAttributes(d *schema.ResourceData, server *api.Server) error {
 		return err
 	}
 
-	if err := d.Set("ipv4", server.Ipv4); err != nil {
+	if err := d.Set("ipv4", server.IPv4); err != nil {
 		return err
 	}
 
-	if err := d.Set("ipv6", server.Ipv6); err != nil {
+	if err := d.Set("ipv6", server.IPv6); err != nil {
 		return err
 	}
 
-	if err := d.Set("status", server.Status); err != nil {
+	if err := d.Set("status", string(server.Status)); err != nil {
 		return err
 	}
 
-	if err := d.Set("webserver", server.WebServer); err != nil {
+	if err := d.Set("webserver", string(server.WebServer)); err != nil {
 		return err
 	}
 
@@ -243,7 +241,7 @@ func setServerAttributes(d *schema.ResourceData, server *api.Server) error {
 
 	d.SetConnInfo(map[string]string{
 		"type": "ssh",
-		"host": server.Ipv4,
+		"host": server.IPv4,
 	})
 
 	return nil
